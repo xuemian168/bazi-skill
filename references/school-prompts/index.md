@@ -30,6 +30,7 @@ If raw birth data is included, treat it as provenance only. The computed chart f
 
 | Role | File | Primary Sources |
 |---|---|---|
+| Referee Planner / 裁判规划 | `referee-planner.md` | `agent-roles.md`, `project-contracts.md`, `common-schools.md`, task references |
 | Referee / 裁判 | `referee.md` | `agent-roles.md`, `project-contracts.md`, `report-generation.md` |
 | 子平格局 | `ziping-pattern-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `AlgorithmGuide.tsx` |
 | 旺衰扶抑 | `strength-balance-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.md` |
@@ -57,3 +58,5 @@ Do not invent missing GanZhi, Da Yun, Zi Wei stars, Western astrology placements
 When evidence is insufficient, write evidence_gap instead of guessing.
 Return the required structured notes only.
 ```
+
+For `referee-planner`, use `referee-planner.md` instead of the master invocation template. The planner outputs role selection and validation steps only; it must not interpret chart facts.

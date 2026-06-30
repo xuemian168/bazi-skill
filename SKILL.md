@@ -1,6 +1,6 @@
 ---
 name: bazi-skill
-description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, optional Western astrology / zodiac / 星座 evidence, optional NaYin 纳音, branch-relation 刑冲合害, Qi Men Dun Jia 奇门遁甲, Liu Yao 六爻 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
+description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, optional Western astrology / zodiac / 星座 evidence, optional NaYin 纳音, branch-relation 刑冲合害, Qi Men Dun Jia 奇门遁甲, Liu Yao 六爻 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判规划/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
 ---
 
 # bazi-skill
@@ -35,30 +35,34 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
 
 ## Multi-School Masters + Referee Pattern
 
-Use this pattern when the user asks for an `ai-berkshire`-style team workflow, multi-agent analysis, 多流派大师, 大师会诊, 裁判综合, deep review, report generation, or a complex task where different mainstream schools should be compared. For role details, read `references/agent-roles.md`; for executable school prompts, read `references/school-prompts/index.md` and only the selected role prompt files.
+Use this pattern when the user asks for an `ai-berkshire`-style team workflow, multi-agent analysis, 多流派大师, 大师会诊, 裁判规划, 裁判综合, deep review, report generation, or a complex task where different mainstream schools should be compared. For role details, read `references/agent-roles.md`; for executable school prompts, read `references/school-prompts/index.md` and only the selected role prompt files.
 
-### Three-layer design
+### Four-layer design
 
 1. **Skill layer**: The skill is the scenario entry point. It decides the workflow, required references, output contract, and validation gates.
-2. **School-master layer**: Parallel master personas represent different mainstream schools. They perform school-specific interpretation from the same evidence packet. They do not own source-of-truth calculations and do not emit final app contracts directly.
-3. **Tool/validator layer**: Local deterministic libraries and scripts are the authority for chart facts, schema checks, JSON validation, and report composition.
+2. **Referee-planner layer**: The planner decides which facts are missing, which roles are useful, which roles must be skipped, and which validation steps are required.
+3. **School-master layer**: Parallel master personas represent different mainstream schools. They perform school-specific interpretation from the same evidence packet. They do not own source-of-truth calculations and do not emit final app contracts directly.
+4. **Tool/validator layer**: Local deterministic libraries and scripts are the authority for chart facts, schema checks, JSON validation, and report composition.
 
 ### Referee workflow
 
 For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main agent acts as **referee / 裁判**:
 
-1. Build an evidence packet from code-computed facts, validated JSON, user constraints, and relevant references.
-2. Load `references/school-prompts/index.md`, then assign only the school masters needed for the task: 子平格局, 旺衰扶抑, 调候, 盲派象法, 刑冲合害, 神煞辅助, 纳音, 紫微, 西洋占星, 奇门, 六爻, 择日, 合盘, and safety/report roles as applicable.
-3. Load each selected master's corresponding prompt file from `references/school-prompts/` before dispatching or simulating that role.
-4. Require each master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
-5. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
-6. The referee synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
-7. Validate final artifacts with deterministic scripts before treating them as ready.
+1. Build an evidence-availability packet from code-computed facts, validated JSON, user constraints, and relevant references.
+2. Load `references/school-prompts/referee-planner.md` and produce a dispatch plan with task type, missing facts, selected references, selected masters, parallel groups, and validation steps.
+3. If the planner identifies blocking missing facts, ask the user or compute them with deterministic code before dispatching masters.
+4. Load `references/school-prompts/index.md`, then load only the selected masters from the planner output.
+5. Require each selected master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
+6. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
+7. The referee synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
+8. Validate final artifacts with deterministic scripts before treating them as ready.
 
 ### Execution rules
 
 - Start school masters in parallel only when the task is large enough to benefit from independent views. For small edits, use a single-agent workflow.
 - Do not start parallel masters until the information-completeness gate has passed or the user has explicitly accepted the stated assumptions.
+- Run the referee-planner before master dispatch for complex/report-grade tasks. The planner is allowed to select a single role or no school-master role when that is sufficient.
+- The planner must explain skipped roles when a role seems relevant but lacks computed evidence.
 - Every master prompt must include: "CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH" and the relevant confirmed facts.
 - Give each master the same source-of-truth evidence packet plus only the references required for its school.
 - If a selected prompt file says the current project lacks a complete knowledge base for that sub-school, preserve that limitation in the master output as `evidence_gap` instead of inventing rules.

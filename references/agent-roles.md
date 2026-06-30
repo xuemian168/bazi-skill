@@ -21,11 +21,12 @@ The referee / 裁判 owns the final workflow:
 
 1. Pass the information-completeness gate.
 2. Compute or collect all deterministic facts using local code and validators.
-3. Build one shared evidence packet for all school masters.
-4. Select the minimum useful master set.
-5. Compare school theses and resolve conflicts.
-6. Produce the final answer, JSON, report spec, or structured report.
-7. Run deterministic validation and report QA.
+3. Build an evidence-availability packet.
+4. Run `referee-planner` for complex/report-grade tasks to decide missing facts, selected references, selected masters, parallel groups, and validation steps.
+5. Build one shared evidence packet for selected school masters.
+6. Compare school theses and resolve conflicts.
+7. Produce the final answer, JSON, report spec, or structured report.
+8. Run deterministic validation and report QA.
 
 The referee is not a vote counter. If schools disagree, decide by evidence quality and source hierarchy:
 
@@ -48,6 +49,21 @@ Every school master receives the same core evidence:
 - Contract requirements: JSON schema, 100-year timeline rules, report QA rules, caveats.
 
 Do not give masters raw birth data as an invitation to recalculate. Raw facts may appear only as provenance beside the computed chart.
+
+## Referee Planner
+
+Before dispatching school masters on complex tasks, use `school-prompts/referee-planner.md`.
+
+The planner is not a master and does not interpret the chart. It produces:
+
+- task type and output target.
+- available evidence and missing facts.
+- selected references and selected masters.
+- roles skipped because evidence is unavailable.
+- parallel groups and sequential steps.
+- validation plan and user questions.
+
+Use the planner to avoid calling every role by default. If the planner finds blocking missing facts, ask for them or compute them before master dispatch.
 
 ## School Master Roster
 
