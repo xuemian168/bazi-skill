@@ -12,6 +12,7 @@ Report generation is a presentation layer. Code must calculate and provide:
 - `AnalysisResult` timeline and eight-dimension interpretation JSON.
 - Zi Wei palaces, stars, Si Hua, Da Xian, and pattern evidence if included.
 - Western astrology placements, houses, aspects, synastry, composite, or transit facts if included.
+- NaYin labels, branch/stem relation matrices, Qi Men plates, Liu Yao hexagrams, or other common-school facts if included.
 - Compatibility matrices and pair-level scores if the report is 合盘/合婚.
 - Auspicious-timing candidate day/hour pillars, feature labels, and ranking inputs if the report is 择日/择时.
 
@@ -22,7 +23,7 @@ AI may write narrative summaries and section prose, but it must not calculate, v
 Before composing a report, assemble a report data object with:
 
 - `reportTitle`, `subjectName`, `lang`, `generatedAt`, and report type (`natal`, `compatibility`, `auspicious-timing`, or `mixed`).
-- Confirmed chart facts: `BaZiResult`, `AnalysisResult`, optional computed Zi Wei facts, optional computed or user-confirmed Western astrology facts, optional compatibility result, optional auspicious-timing result.
+- Confirmed chart facts: `BaZiResult`, `AnalysisResult`, optional computed Zi Wei facts, optional computed or user-confirmed Western astrology facts, optional common-school facts, optional compatibility result, optional auspicious-timing result.
 - Computation metadata: library names and versions, true-solar-time mode, longitude, timezone, equation-of-time use, and whether boundary-hour ambiguity exists.
 - Source caveat: cultural/reflective analysis only; not deterministic medical, legal, financial, or relationship advice.
 - If the input is an `AnalysisResult`, run `scripts/validate_analysis_result.py` before report composition.
@@ -36,7 +37,7 @@ Use a professional report structure:
 3. Computed chart facts: four-pillar table, true-solar-time note, lunar date, Da Yun start age/direction.
 4. Visual summary specification: K-line chart notes, score cards, Da Yun timeline, and selected important years.
 5. Deep sections: investment, personality, career, wealth, feng shui/environment, relationship, health tendency, family/support.
-6. Optional modules: Zi Wei summary, Western astrology/zodiac cross-check, compatibility report, auspicious timing table, manuscript-submission timing notes.
+6. Optional modules: Zi Wei summary, Western astrology/zodiac cross-check, common-school cross-check, compatibility report, auspicious timing table, manuscript-submission timing notes, one-question divination note.
 7. Appendix: calculation method, AI boundary, disclaimer, and raw key facts used for interpretation.
 
 For 合盘 reports, replace individual deep sections with relationship dynamics, complementarity, friction matrix, timing synchronization, advice, and caveats. For 择时报表, center the report on ranked candidate windows, score components, avoid windows, and practical submission schedule.
@@ -65,6 +66,6 @@ Before delivering a report:
 
 - Confirm the source JSON passed `validate_analysis_result.py` when applicable.
 - Confirm report facts match source data: four pillars, start age, Da Yun, peak year, scores, and timing windows.
-- Check no section contains uncomputed GanZhi, Zi Wei stars, Western astrology placements/aspects/transits, compatibility relations, or timing facts invented during narrative writing.
+- Check no section contains uncomputed GanZhi, Zi Wei stars, Western astrology placements/aspects/transits, NaYin labels, branch/stem relations, Qi Men plates, Liu Yao hexagrams, compatibility relations, or timing facts invented during narrative writing.
 - Confirm metadata and AI boundary notes are present.
 - Preserve the source JSON alongside the report spec when a reproducible report deliverable is requested.

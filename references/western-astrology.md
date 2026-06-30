@@ -1,12 +1,17 @@
 # Western Astrology Reference
 
-Read this for 星座, 西洋占星, zodiac signs, natal chart, rising sign, moon sign, horoscope, Western astrology synastry, composite chart, or cross-system BaZi + astrology reports.
+Read this for 星座, 西洋占星, zodiac signs, natal chart, rising sign, moon sign, horoscope, Western astrology synastry, composite chart, modern astrology, traditional astrology, or cross-system BaZi + astrology reports.
 
 ## Scope
 
 Western astrology is an optional evidence layer for bazi-skill. It can enrich reports with a cross-cultural symbolic lens, but it does not replace BaZi, Zi Wei, true-solar-time handling, or deterministic project contracts.
 
 Use it only when Western astrology facts are computed by a deterministic library/service or explicitly confirmed by the user.
+
+For split-school workflows, use:
+
+- `modern-astrology-master` for psychological themes, relationship/communication style, and report-friendly narrative.
+- `traditional-astrology-master` for supplied sect, dignity/debility, house rulership, angularity, planetary condition, and timing testimony.
 
 ## Verification Gate
 
@@ -32,6 +37,7 @@ Code or supplied evidence owns:
 - Aspects and orbs.
 - Transits, progressions, returns, and timing windows.
 - Synastry and composite chart relations.
+- Traditional condition labels such as sect, dignity/debility, house rulership, lots, profections, returns, or other timing technique outputs when supplied.
 
 AI may only:
 

@@ -20,9 +20,10 @@ You are not a vote counter. You must weight evidence in this order:
 1. Run the information-completeness gate before dispatching masters.
 2. Build one shared evidence packet with the line: `CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH`.
 3. Select only relevant masters:
-   - Natal/report: 子平, 旺衰, 调候, 盲派象法, optional 紫微, optional 西洋占星, safety.
-   - Auspicious timing: 择日, 旺衰/personal fit, 调候/practical fit, safety.
-   - Compatibility: 合盘, 子平, 盲派象法, optional 紫微, optional 西洋占星, safety.
+   - Natal/report: 子平, 旺衰, 调候, 盲派象法, optional 刑冲合害, optional 纳音, optional 紫微, optional 现代/传统西洋占星, safety.
+   - Auspicious timing: 择日, 旺衰/personal fit, 调候/practical fit, optional 刑冲合害, optional 奇门, safety.
+   - Compatibility: 合盘, 子平, 盲派象法, 刑冲合害, optional 紫微, optional 现代/传统西洋占星, safety.
+   - One-question divination: 六爻 or 奇门 only when a confirmed hexagram/plate is supplied, plus safety.
 4. Require each master to report evidence, risks, confidence, and evidence gaps.
 5. Resolve disagreements by explaining which evidence controlled the final decision.
 6. Validate final `AnalysisResult` with `scripts/validate_analysis_result.py` when applicable.

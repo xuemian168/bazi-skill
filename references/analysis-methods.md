@@ -17,7 +17,7 @@ Do not cite a classical text decoratively. Cite or mention a source family only 
 
 Keep four layers separate:
 
-1. Calculation facts: pillars, GanZhi, Da Yun, true solar time, optional Zi Wei facts, and optional Western astrology facts only when a tracked implementation or supplied evidence packet computes them.
+1. Calculation facts: pillars, GanZhi, Da Yun, true solar time, optional Zi Wei facts, optional Western astrology facts, optional NaYin labels, branch/stem relation matrices, Qi Men plates, and Liu Yao hexagrams only when a tracked implementation or supplied evidence packet computes them.
 2. Relationship features: five elements, ten gods, branch relations, hidden stems, weather categories.
 3. Scores and ranking: transparent weights and tie-breaks.
 4. Narrative: user-facing interpretation, caveats, and practical advice.
@@ -26,7 +26,7 @@ AI may help with layer 4 and, if necessary, soft scoring. It should not invent l
 
 Hard boundary:
 
-- Code calculates BaZi, Da Yun, Liu Nian, day/hour pillars, compatibility matrices, and auspicious timing candidate features. Zi Wei and Western astrology chart facts are included only when a tracked implementation or supplied evidence packet computes them.
+- Code calculates BaZi, Da Yun, Liu Nian, day/hour pillars, compatibility matrices, and auspicious timing candidate features. Zi Wei, Western astrology, NaYin, Qi Men, and Liu Yao facts are included only when a tracked implementation or supplied evidence packet computes them.
 - AI interprets and explains those computed features.
 - If a result depends on a fact that has not been computed, compute it first or mark it unavailable; do not let AI fill it in.
 
@@ -256,5 +256,5 @@ Before finalizing any analysis:
 - Every strong claim must point to a feature: Da Yun, branch relation, ten god, element balance, or chart position.
 - Do not mix scales without saying whether the score is 1-10 or 0-100.
 - Do not contradict confirmed chart facts.
-- Do not introduce uncomputed GanZhi, Da Yun, Zi Wei, Western astrology placements/aspects/transits, compatibility, or timing facts in narrative text.
+- Do not introduce uncomputed GanZhi, Da Yun, Zi Wei, Western astrology placements/aspects/transits, NaYin, branch/stem relation, Qi Men, Liu Yao, compatibility, or timing facts in narrative text.
 - Include cultural-reference caveats for fortune, health, relationship, and investment content.

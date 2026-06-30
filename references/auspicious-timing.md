@@ -15,6 +15,7 @@ Ask only for missing essentials:
 - Location and timezone for the event.
 - Available time window: full day or constrained hours.
 - Participants: optional birth data or confirmed BaZi if personal compatibility is requested.
+- Optional external timing evidence: computed Qi Men plate(s) or user-confirmed plate facts.
 - Hard exclusions: dates/times that cannot be used.
 
 If the user only gives one date and asks for a 吉时, rank the usable two-hour Chinese periods within that date.
@@ -26,6 +27,7 @@ If the user only gives one date and asks for a 吉时, rank the usable two-hour 
 - For app implementation, use a deterministic calendar library such as `lunar-javascript` to derive day GanZhi, hour GanZhi, lunar date, solar terms, and obvious almanac fields if available.
 - If a person-specific chart is supplied, treat the confirmed chart as truth. Do not recalculate it unless the user asks.
 - If no personal chart is supplied, produce a general event-oriented ranking only.
+- If Qi Men is used, its plate facts must be computed by code or supplied as confirmed evidence; do not ask AI to construct a plate from the event time.
 - Do not ask AI to calculate candidate day/hour pillars. Generate candidates and feature tables in code, then let AI explain or rank from those supplied facts.
 
 ## Event-Type Priorities
@@ -95,6 +97,7 @@ When asking an AI provider to explain timing, include:
 
 - Event type and constraints.
 - Candidate windows with computed day/hour GanZhi and any personal chart facts.
+- Optional computed Qi Men plate facts if the event workflow supports them.
 - A strict instruction to rank only the supplied candidates unless asked to search.
 - A request for structured output with score, reason, risks, and confidence.
 

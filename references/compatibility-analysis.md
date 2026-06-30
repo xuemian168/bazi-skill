@@ -85,6 +85,8 @@ Relations:
 
 Do not count every minor relation equally. Prefer a weighted matrix and explain the top 3-5 features.
 
+For report-grade compatibility, the referee may also route the supplied relation matrix to `branch-relation-master` for a focused 刑冲合害 review. That role still may not calculate missing relations.
+
 ### 5. Heavenly-Stem Relations
 
 Check cross-chart stem relations:
@@ -138,6 +140,7 @@ Use Western astrology only if both natal charts, synastry facts, or composite fa
 - Use house overlays or composite chart facts only when present in the evidence packet.
 - Treat this as secondary cross-cultural evidence. Do not hand-calculate signs, houses, aspects, transits, or synastry from birth data.
 - If BaZi and Western astrology point in different directions, preserve the tension and explain the confidence basis rather than forcing agreement.
+- Use `modern-astrology-master` for relationship psychology and communication themes; use `traditional-astrology-master` only when traditional condition or timing facts are supplied.
 
 ## Suggested Score Model
 
