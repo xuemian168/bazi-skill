@@ -1,6 +1,6 @@
 ---
 name: bazi-skill
-description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, optional Western astrology / zodiac / 星座 evidence, optional NaYin 纳音, branch-relation 刑冲合害, Qi Men Dun Jia 奇门遁甲, Liu Yao 六爻 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判规划/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
+description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, optional Western astrology / zodiac / 星座 evidence, optional NaYin 纳音, branch-relation 刑冲合害, Qi Men Dun Jia 奇门遁甲, Liu Yao 六爻 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/orchestrator workflows 多流派大师/主理规划师/主理官综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
 ---
 
 # bazi-skill
@@ -11,7 +11,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
 
 1. Classify the task:
    - Code change in a host project: read the repository docs and the touched modules before editing. Start with `CLAUDE.md` if present, then the relevant `components/CLAUDE.md`, `services/CLAUDE.md`, `types/CLAUDE.md`, or `constants/CLAUDE.md` if present.
-   - Skill or workflow architecture change, including requests to reference `ai-berkshire`, a multi-agent research/team pattern, multi-school masters, 大师会诊, or 裁判综合: update this skill or related skill docs first; do not change frontend/backend application code unless the user explicitly asks for implementation.
+   - Skill or workflow architecture change, including requests to reference `ai-berkshire`, a multi-agent research/team pattern, multi-school masters, 大师会诊, 主理规划师, or 主理官综合: update this skill or related skill docs first; do not change frontend/backend application code unless the user explicitly asks for implementation.
    - Analysis JSON generation, repair, or validation: read `references/project-contracts.md`, then run `scripts/validate_analysis_result.py` on any candidate JSON.
    - BaZi rules, prompt wording, scoring logic, or domain explanation: read `references/bazi-domain-reference.md`, then `references/analysis-methods.md` when the task needs interpretation or ranking.
    - True solar time, strict apparent solar time, timezone, longitude correction, equation of time, or boundary-hour issues: read `references/true-solar-time.md`; if implementing, also read `references/project-contracts.md`.
@@ -33,41 +33,41 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
    - For professional reports, require the source `BaZiResult`, `AnalysisResult`, or report-spec JSON and the desired output format/scope before rendering.
    - Optional missing details may be handled with explicit assumptions only when the final output remains contract-valid and the user request is not asking for precision.
 
-## Multi-School Masters + Referee Pattern
+## Multi-School Masters + Orchestrator Pattern
 
-Use this pattern when the user asks for an `ai-berkshire`-style team workflow, multi-agent analysis, 多流派大师, 大师会诊, 裁判规划, 裁判综合, deep review, report generation, or a complex task where different mainstream schools should be compared. For role details, read `references/agent-roles.md`; for executable school prompts, read `references/school-prompts/index.md` and only the selected role prompt files.
+Use this pattern when the user asks for an `ai-berkshire`-style team workflow, multi-agent analysis, 多流派大师, 大师会诊, 主理规划师, 主理官综合, deep review, report generation, or a complex task where different mainstream schools should be compared. For role details, read `references/agent-roles.md`; for executable school prompts, read `references/school-prompts/index.md` and only the selected role prompt files.
 
 ### Four-layer design
 
 1. **Skill layer**: The skill is the scenario entry point. It decides the workflow, required references, output contract, and validation gates.
-2. **Referee-planner layer**: The planner decides which facts are missing, which roles are useful, which roles must be skipped, and which validation steps are required.
+2. **Orchestrator-planner layer**: The planner decides which facts are missing, which roles are useful, which roles must be skipped, and which validation steps are required.
 3. **School-master layer**: Parallel master personas represent different mainstream schools. They perform school-specific interpretation from the same evidence packet. They do not own source-of-truth calculations and do not emit final app contracts directly.
 4. **Tool/validator layer**: Local deterministic libraries and scripts are the authority for chart facts, schema checks, JSON validation, and report composition.
 
-### Referee workflow
+### Orchestrator workflow
 
-For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main agent acts as **referee / 裁判**:
+For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main agent acts as **orchestrator / 主理官**:
 
 1. Build an evidence-availability packet from code-computed facts, validated JSON, user constraints, and relevant references.
-2. Load `references/school-prompts/referee-planner.md` and produce a dispatch plan with task type, missing facts, selected references, selected masters, parallel groups, and validation steps.
+2. Load `references/school-prompts/orchestrator-planner.md` and produce a dispatch plan with task type, missing facts, selected references, selected masters, parallel groups, and validation steps.
 3. If the planner identifies blocking missing facts, ask the user or compute them with deterministic code before dispatching masters.
 4. Load `references/school-prompts/index.md`, then load only the selected masters from the planner output.
 5. Require each selected master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
 6. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
-7. The referee synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
+7. The orchestrator synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
 8. Validate final artifacts with deterministic scripts before treating them as ready.
 
 ### Execution rules
 
 - Start school masters in parallel only when the task is large enough to benefit from independent views. For small edits, use a single-agent workflow.
 - Do not start parallel masters until the information-completeness gate has passed or the user has explicitly accepted the stated assumptions.
-- Run the referee-planner before master dispatch for complex/report-grade tasks. The planner is allowed to select a single role or no school-master role when that is sufficient.
+- Run the orchestrator-planner before master dispatch for complex/report-grade tasks. The planner is allowed to select a single role or no school-master role when that is sufficient.
 - The planner must explain skipped roles when a role seems relevant but lacks computed evidence.
 - Every master prompt must include: "CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH" and the relevant confirmed facts.
 - Give each master the same source-of-truth evidence packet plus only the references required for its school.
 - If a selected prompt file says the current project lacks a complete knowledge base for that sub-school, preserve that limitation in the master output as `evidence_gap` instead of inventing rules.
-- Master outputs should be concise findings, risks, evidence, scores, or section edits. The referee must synthesize; do not paste master reports together.
-- The referee owns final decisions, contract shape, JSON repair, and user-facing wording.
+- Master outputs should be concise findings, risks, evidence, scores, or section edits. The orchestrator must synthesize; do not paste master reports together.
+- The orchestrator owns final decisions, contract shape, JSON repair, and user-facing wording.
 - Validate every final `AnalysisResult` with `scripts/validate_analysis_result.py` before treating it as ready.
 - For professional reports, run the report-generation workflow after JSON validation; masters may review sections, but final prose consumes computed/validated data only.
 - Do not implement runtime multi-agent behavior in the frontend/backend unless the user explicitly asks for an app code change.
@@ -139,8 +139,8 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 - `references/common-schools.md`: optional common-school extensions for NaYin, branch relations, Qi Men, Liu Yao, and modern/traditional astrology split.
 - `references/auspicious-timing.md`: workflow for day/hour granularity, event-type inputs, scoring, and output format for 吉日吉时.
 - `references/report-generation.md`: professional structured/Markdown/HTML report workflow, section structure, and QA checklist.
-- `references/agent-roles.md`: multi-school master + referee workflow, school roster, evidence packet, and synthesis rules.
-- `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the referee and each school master.
+- `references/agent-roles.md`: multi-school master + orchestrator workflow, school roster, evidence packet, and synthesis rules.
+- `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the orchestrator and each school master.
 - `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
 
 ## Useful Commands

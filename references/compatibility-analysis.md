@@ -85,7 +85,7 @@ Relations:
 
 Do not count every minor relation equally. Prefer a weighted matrix and explain the top 3-5 features.
 
-For report-grade compatibility, the referee may also route the supplied relation matrix to `branch-relation-master` for a focused 刑冲合害 review. That role still may not calculate missing relations.
+For report-grade compatibility, the orchestrator may also route the supplied relation matrix to `branch-relation-master` for a focused 刑冲合害 review. That role still may not calculate missing relations.
 
 ### 5. Heavenly-Stem Relations
 

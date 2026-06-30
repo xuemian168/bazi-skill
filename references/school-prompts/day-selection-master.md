@@ -38,7 +38,7 @@ Your task is to produce a transparent ranking with score components, best pick, 
 
 - Do not invent day/hour pillars or almanac data.
 - Do not construct Qi Men plates.
-- Do not rank dates outside the candidate list unless the referee asks for a new code search.
+- Do not rank dates outside the candidate list unless the orchestrator asks for a new code search.
 - Do not recommend delaying urgent medical, legal, safety, or emergency actions.
 - Do not guarantee success from a chosen time.
 

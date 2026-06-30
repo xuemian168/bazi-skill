@@ -1,34 +1,34 @@
-# Multi-School Masters + Referee Roles
+# Multi-School Masters + Orchestrator Roles
 
-Read this when using 多流派大师会诊 / master-referee mode for deep BaZi, Zi Wei, Western astrology, NaYin, branch relations, Qi Men, Liu Yao, compatibility, auspicious timing, K-line JSON, or professional report work.
+Read this when using 多流派大师会诊 / master-orchestrator mode for deep BaZi, Zi Wei, Western astrology, NaYin, branch relations, Qi Men, Liu Yao, compatibility, auspicious timing, K-line JSON, or professional report work.
 
 This is not real-person impersonation. Each "master" is a method persona representing a mainstream school. All deterministic chart facts still come from code.
 
 ## When To Use
 
-Use master-referee mode when:
+Use master-orchestrator mode when:
 
 - The task is high impact, long-form, or report-grade.
-- The user asks for 多流派大师, 大师会诊, 不同流派, 裁判综合, committee, or research-team behavior.
+- The user asks for 多流派大师, 大师会诊, 不同流派, 主理规划师, 主理官综合, committee, or research-team behavior.
 - The output benefits from comparing mainstream method families rather than one interpretive style.
 - Independent schools can reveal disagreement, weak evidence, or overconfident claims.
 
 Do not use it for simple one-off answers, small code edits, or quick JSON validation.
 
-## Referee Responsibilities
+## Orchestrator Responsibilities
 
-The referee / 裁判 owns the final workflow:
+The orchestrator / 主理官 owns the final workflow:
 
 1. Pass the information-completeness gate.
 2. Compute or collect all deterministic facts using local code and validators.
 3. Build an evidence-availability packet.
-4. Run `referee-planner` for complex/report-grade tasks to decide missing facts, selected references, selected masters, parallel groups, and validation steps.
+4. Run `orchestrator-planner` for complex/report-grade tasks to decide missing facts, selected references, selected masters, parallel groups, and validation steps.
 5. Build one shared evidence packet for selected school masters.
 6. Compare school theses and resolve conflicts.
 7. Produce the final answer, JSON, report spec, or structured report.
 8. Run deterministic validation and report QA.
 
-The referee is not a vote counter. If schools disagree, decide by evidence quality and source hierarchy:
+The orchestrator is not a vote counter. If schools disagree, decide by evidence quality and source hierarchy:
 
 1. Code-computed chart facts and validated JSON.
 2. Project contract and schema.
@@ -50,9 +50,9 @@ Every school master receives the same core evidence:
 
 Do not give masters raw birth data as an invitation to recalculate. Raw facts may appear only as provenance beside the computed chart.
 
-## Referee Planner
+## Orchestrator Planner
 
-Before dispatching school masters on complex tasks, use `school-prompts/referee-planner.md`.
+Before dispatching school masters on complex tasks, use `school-prompts/orchestrator-planner.md`.
 
 The planner is not a master and does not interpret the chart. It produces:
 
@@ -88,7 +88,7 @@ Before dispatching or simulating a persona, load `references/school-prompts/inde
 | `liuyao-question-master` | `school-prompts/liuyao-question-master.md` | 六爻问事: supplied hexagram, changing lines, six relatives/spirits | One concrete question, go/no-go, blocker and timing tendency | Cast a hexagram or calculate useful gods/day-month effects |
 | `day-selection-master` | `school-prompts/day-selection-master.md` | 择日/通书取象: 日课, 时课, 冲合, 事件适配 | 吉日吉时, submission timing, signing/launch timing | Invent candidate day/hour pillars |
 | `compatibility-master` | `school-prompts/compatibility-master.md` | 合盘合参: 日主关系, 夫妻宫/关系宫, 五行互补, 大运同步 | 合盘, 合婚, partnership reports | Declare doomed/guaranteed relationships |
-| `safety-editor` | `school-prompts/safety-editor.md` | 裁判辅助: caveat, overclaim, schema, medical/legal/financial risk | All high-impact outputs and reports | Add new interpretation or weaken confirmed facts |
+| `safety-editor` | `school-prompts/safety-editor.md` | 主理辅助: caveat, overclaim, schema, medical/legal/financial risk | All high-impact outputs and reports | Add new interpretation or weaken confirmed facts |
 
 ## Master Output Format
 
@@ -107,14 +107,14 @@ recommended_wording:
 
 For scoring disagreements, ask for component-level reasons, not just a final score.
 
-## Referee Synthesis
+## Orchestrator Synthesis
 
-The referee should produce:
+The orchestrator should produce:
 
 - Final selected interpretation or ranking.
 - School consensus: what most schools agree on.
 - School disagreement: where methods diverge and why.
-- Referee decision: which view is weighted most for this task.
+- Orchestrator decision: which view is weighted most for this task.
 - Confidence and limitations.
 - User-facing output in the requested format.
 - Validation status.
@@ -134,7 +134,7 @@ Natal professional report:
 7. `ziwei-master` if Zi Wei facts are computed
 8. `modern-astrology-master` or `traditional-astrology-master` if matching Western astrology facts are supplied
 9. `safety-editor`
-10. Referee synthesis and report QA
+10. Orchestrator synthesis and report QA
 
 Auspicious timing:
 
@@ -144,7 +144,7 @@ Auspicious timing:
 4. `branch-relation-master` for candidate relation stacking
 5. `qimen-timing-master` if computed Qi Men plates are supplied
 6. `safety-editor`
-7. Referee final ranking
+7. Orchestrator final ranking
 
 Compatibility:
 
@@ -155,22 +155,22 @@ Compatibility:
 5. `ziwei-master` if both Zi Wei charts are computed
 6. `modern-astrology-master` or `traditional-astrology-master` if both Western charts or synastry facts are computed or user-confirmed
 7. `safety-editor`
-8. Referee synthesis
+8. Orchestrator synthesis
 
 One-question divination:
 
 1. `liuyao-question-master` if a confirmed Liu Yao cast is supplied
 2. `qimen-timing-master` if a computed Qi Men plate is supplied
 3. `safety-editor`
-4. Referee synthesis
+4. Orchestrator synthesis
 
 ## Report Workflow
 
 For professional reports:
 
-1. Referee builds an evidence packet from code facts and validated JSON.
+1. Orchestrator builds an evidence packet from code facts and validated JSON.
 2. Required school masters produce school-specific notes.
 3. `safety-editor` checks caveats, overclaiming, and wording risk.
-4. Referee finalizes report spec and conflict-resolution notes.
+4. Orchestrator finalizes report spec and conflict-resolution notes.
 5. Compose the final structured, Markdown, or HTML-style report.
 6. Check metadata, source alignment, caveats, table readability, and wording risk.

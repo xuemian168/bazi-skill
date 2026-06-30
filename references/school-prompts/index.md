@@ -1,12 +1,12 @@
 # School Prompt Pack Index
 
-Read this directory only for master-referee / 多流派大师会诊 workflows. These files are prompt templates and small knowledge slices distilled from the current skill references and project docs. They are not a replacement for deterministic code calculation.
+Read this directory only for master-orchestrator / 多流派大师会诊 workflows. These files are prompt templates and small knowledge slices distilled from the current skill references and project docs. They are not a replacement for deterministic code calculation.
 
 ## Source Policy
 
 - Use code-computed facts as truth: BaZi pillars, Da Yun, Liu Nian, Zi Wei facts, Western astrology facts, NaYin labels, branch/stem relation matrices, Qi Men plates, Liu Yao hexagrams, compatibility features, and timing candidates.
 - Use these prompt files only to interpret, compare, rank, and write.
-- If a requested school needs facts not present in the evidence packet, ask the referee for those facts or return `evidence_gap`; do not fill them from memory.
+- If a requested school needs facts not present in the evidence packet, ask the orchestrator for those facts or return `evidence_gap`; do not fill them from memory.
 - Do not quote classical book names decoratively. Mention source families only when applying a method already represented in the prompt or project references.
 
 ## Common Evidence Packet
@@ -30,8 +30,8 @@ If raw birth data is included, treat it as provenance only. The computed chart f
 
 | Role | File | Primary Sources |
 |---|---|---|
-| Referee Planner / 裁判规划 | `referee-planner.md` | `agent-roles.md`, `project-contracts.md`, `common-schools.md`, task references |
-| Referee / 裁判 | `referee.md` | `agent-roles.md`, `project-contracts.md`, `report-generation.md` |
+| Orchestrator Planner / 主理规划师 | `orchestrator-planner.md` | `agent-roles.md`, `project-contracts.md`, `common-schools.md`, task references |
+| Orchestrator / 主理官 | `orchestrator.md` | `agent-roles.md`, `project-contracts.md`, `report-generation.md` |
 | 子平格局 | `ziping-pattern-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `AlgorithmGuide.tsx` |
 | 旺衰扶抑 | `strength-balance-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.md` |
 | 调候 | `tiaohou-season-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `true-solar-time.md` |
@@ -59,4 +59,4 @@ When evidence is insufficient, write evidence_gap instead of guessing.
 Return the required structured notes only.
 ```
 
-For `referee-planner`, use `referee-planner.md` instead of the master invocation template. The planner outputs role selection and validation steps only; it must not interpret chart facts.
+For `orchestrator-planner`, use `orchestrator-planner.md` instead of the master invocation template. The planner outputs role selection and validation steps only; it must not interpret chart facts.

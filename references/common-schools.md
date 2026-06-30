@@ -99,7 +99,7 @@ Use `western-astrology-master` for general astrology facts. Use the split master
 
 Do not let either school calculate placements or override BaZi facts.
 
-## Recommended Referee Use
+## Recommended Orchestrator Use
 
 - Natal/report: BaZi core schools + optional NaYin + optional modern/traditional astrology + safety.
 - Relationship: compatibility + branch-relation deep dive + optional Zi Wei + optional Western synastry + safety.
@@ -112,4 +112,4 @@ Do not let either school calculate placements or override BaZi facts.
 - Treat all schools as symbolic/cultural analysis.
 - Never delay urgent medical, legal, safety, or emergency actions for a divination result.
 - Do not stack many weak auxiliary signals to manufacture certainty.
-- Preserve disagreement between schools; the referee resolves it with source quality and task fit.
+- Preserve disagreement between schools; the orchestrator resolves it with source quality and task fit.
