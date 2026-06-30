@@ -6,7 +6,7 @@
 
 ## 安装方式
 
-下面的 `<repo-url>` 替换为实际仓库地址，例如 `https://github.com/<your-github-user>/bazi-skill.git`。
+仓库地址：`https://github.com/xuemian168/bazi-skill.git`
 
 ### 安装到 Codex
 
@@ -14,7 +14,7 @@ Codex 会从 `${CODEX_HOME:-$HOME/.codex}/skills` 发现本地 skill：
 
 ```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-git clone <repo-url> "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
+git clone https://github.com/xuemian168/bazi-skill.git "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 ```
 
 如果已经下载到本地，也可以直接复制：
@@ -32,7 +32,7 @@ cp -R /path/to/bazi-skill "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 
 ```bash
 mkdir -p .claude/skills
-git clone <repo-url> .claude/skills/bazi-skill
+git clone https://github.com/xuemian168/bazi-skill.git .claude/skills/bazi-skill
 ```
 
 安装后在 Claude Code 中使用：
