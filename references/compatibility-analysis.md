@@ -20,13 +20,13 @@ Ask only for missing essentials:
 - Purpose: overall fit, marriage timing, conflict diagnosis, business partnership, communication advice, date/hour selection.
 - Optional timeframe: current year, next 3 years, marriage window, business launch window.
 
-For uncertain birth time or a birth time near a solar-time-adjusted branch boundary, mark hour-pillar and Zi Wei conclusions as low confidence. Keep year/month/day comparisons but avoid hour-specific certainty. Read `true-solar-time.md` when strict true solar time or boundary ambiguity matters.
+For uncertain birth time or a birth time near a solar-time-adjusted branch boundary, mark hour-pillar, Zi Wei, ascendant, house, and other time-sensitive conclusions as low confidence. Keep year/month/day comparisons but avoid hour-specific certainty. Read `true-solar-time.md` when strict true solar time or boundary ambiguity matters.
 
 ## Calculation Authority
 
 - Compute each person's chart locally with `lunar-javascript` when raw birth data is supplied.
 - If the user provides confirmed charts, treat them as truth.
-- Do not ask AI to invent or calculate either person's pillars, Da Yun, Liu Nian, compatibility relations, or Zi Wei palaces.
+- Do not ask AI to invent or calculate either person's pillars, Da Yun, Liu Nian, compatibility relations, Zi Wei palaces, or Western astrology placements/aspects.
 - Use AI only to explain or summarize computed compatibility features.
 
 ## Feature Layers
@@ -129,6 +129,16 @@ Use Zi Wei only if both charts are computed reliably:
 - Compare current Da Xian pressure/support.
 - Treat this as secondary evidence. Do not hand-roll Zi Wei star placement.
 
+### 9. Western Astrology Optional Cross-Check
+
+Use Western astrology only if both natal charts, synastry facts, or composite facts are computed reliably or user-confirmed:
+
+- Compare supplied Sun/Moon/Rising, Venus, Mars, seventh-house, and relationship-relevant placements.
+- Use computed synastry aspects and orbs as relationship evidence.
+- Use house overlays or composite chart facts only when present in the evidence packet.
+- Treat this as secondary cross-cultural evidence. Do not hand-calculate signs, houses, aspects, transits, or synastry from birth data.
+- If BaZi and Western astrology point in different directions, preserve the tension and explain the confidence basis rather than forcing agreement.
+
 ## Suggested Score Model
 
 Use a 100-point score with visible components:
@@ -149,7 +159,7 @@ If this is business compatibility, shift weights:
 - 15 timing synchronization.
 - 10 practical context and confidence.
 
-Report confidence separately. Low confidence if either birth time is missing, location/timezone is uncertain, or charts were manually entered without confirmation.
+Report confidence separately. Low confidence if either birth time is missing, location/timezone is uncertain, or charts were manually entered without confirmation. Western astrology ascendant, house, Moon-boundary, and synastry conclusions also become low confidence when birth time is missing or unverified.
 
 ## Output Format
 

@@ -1,11 +1,11 @@
 ---
 name: bazi-skill
-description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
+description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, optional Western astrology / zodiac / 星座 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
 ---
 
 # bazi-skill
 
-Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and K-line style fortune workflows. Preserve the source-of-truth split: local libraries calculate charts; AI writes structured interpretation against a confirmed chart.
+Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optional Western astrology evidence, and K-line style fortune workflows. Preserve the source-of-truth split: local libraries calculate charts; AI writes structured interpretation against a confirmed chart.
 
 ## Workflow
 
@@ -16,6 +16,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and K-l
    - BaZi rules, prompt wording, scoring logic, or domain explanation: read `references/bazi-domain-reference.md`, then `references/analysis-methods.md` when the task needs interpretation or ranking.
    - True solar time, strict apparent solar time, timezone, longitude correction, equation of time, or boundary-hour issues: read `references/true-solar-time.md`; if implementing, also read `references/project-contracts.md`.
    - Zi Wei chart logic, palace display, or pattern wording: read `references/ziwei-reference.md`.
+   - Western astrology, zodiac signs, star signs, 星座, 西洋占星, natal chart, ascendant, moon sign, aspects, transits, or astrology synastry: read `references/western-astrology.md`.
    - Compatibility or synastry analysis, 合盘, 合婚, 伴侣匹配, relationship fit, or partnership matching: read `references/compatibility-analysis.md`, plus `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Auspicious date/hour selection, 吉日吉时, 择日, or 择时: read `references/auspicious-timing.md` and `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Professional report, 命理研报, structured report, Markdown report, or HTML report workflow: read `references/report-generation.md` and `references/project-contracts.md`; if using an `AnalysisResult`, validate the JSON before composing the report.
@@ -23,7 +24,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and K-l
 2. Apply an information-completeness gate before analysis, JSON generation, report rendering, or multi-agent work:
    - If required user information is missing, ask follow-up questions before proceeding. Do not guess birth facts, chart facts, event constraints, relationship counterpart data, or report scope.
    - Ask only the missing essentials, preferably 1-3 concise questions at a time.
-   - For normal BaZi calculation, required essentials are: gender, birth date, birth time, calendar type (solar/lunar if ambiguous), birthplace or longitude/timezone basis, and whether true solar time should use the current legacy method or strict apparent solar time when that distinction matters. For Zi Wei, first verify that the current repo actually contains a tracked implementation and contract; otherwise treat Zi Wei as unavailable or planned.
+   - For normal BaZi calculation, required essentials are: gender, birth date, birth time, calendar type (solar/lunar if ambiguous), birthplace or longitude/timezone basis, and whether true solar time should use the current legacy method or strict apparent solar time when that distinction matters. For Zi Wei, first verify that the current repo actually contains a tracked implementation and contract; otherwise treat Zi Wei as unavailable or planned. For Western astrology, first verify a tracked ephemeris/service or require a user-confirmed astrology chart; otherwise treat it as unavailable or planned.
    - For professional-mode chart input, required essentials are: four pillars and gender. Birth year, startAge, direction, and daYun can use documented defaults only when the user accepts approximate/professional-mode behavior.
    - For compatibility/synastry, require both people’s chart inputs or confirmed charts plus the relationship goal/context.
    - For auspicious timing, require event type, candidate date range, location/timezone, and any hard constraints before ranking dates/hours.
@@ -42,10 +43,10 @@ Use this pattern when the user asks for an `ai-berkshire`-style team workflow, m
 
 ### Referee workflow
 
-For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**:
+For complex BaZi/Zi Wei/Western astrology/K-line work, the main agent acts as **referee / 裁判**:
 
 1. Build an evidence packet from code-computed facts, validated JSON, user constraints, and relevant references.
-2. Load `references/school-prompts/index.md`, then assign only the school masters needed for the task: 子平格局, 旺衰扶抑, 调候, 盲派象法, 神煞辅助, 紫微, 择日, 合盘, and safety/report roles as applicable.
+2. Load `references/school-prompts/index.md`, then assign only the school masters needed for the task: 子平格局, 旺衰扶抑, 调候, 盲派象法, 神煞辅助, 紫微, 西洋占星, 择日, 合盘, and safety/report roles as applicable.
 3. Load each selected master's corresponding prompt file from `references/school-prompts/` before dispatching or simulating that role.
 4. Require each master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
 5. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
@@ -74,7 +75,9 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
    - Professional mode accepts user-entered pillars as truth and only fills defaults for missing `startAge`, `direction`, and `daYun`.
    - Do not assume the repo contains a Zi Wei service. Verify tracked/present files before referencing any path such as `services/ziweiService.ts` or `components/ZiWeiChartPanel.tsx`.
    - If Zi Wei is implemented, its palaces, stars, Si Hua, Da Xian, and pattern evidence must still come from deterministic code or a vetted library; do not hand-roll these facts in AI text.
-   - Never ask an AI model to calculate or recalculate BaZi, Da Yun, Liu Nian GanZhi, Zi Wei palaces/stars, compatibility matrices, or auspicious timing pillars. Code must compute these facts first; AI may only interpret, summarize, explain, rank from supplied features, or polish wording.
+   - Do not assume the repo contains a Western astrology service, ephemeris, or chart UI. Verify tracked/present files before referencing implementation paths.
+   - If Western astrology is implemented, sun sign, moon sign, ascendant, houses, planetary placements, aspects, transits, synastry, and composite facts must come from deterministic code or user-confirmed charts.
+   - Never ask an AI model to calculate or recalculate BaZi, Da Yun, Liu Nian GanZhi, Zi Wei palaces/stars, Western astrology placements/houses/aspects/transits, compatibility matrices, or auspicious timing pillars. Code must compute these facts first; AI may only interpret, summarize, explain, rank from supplied features, or polish wording.
 
 4. Treat confirmed chart data as truth:
    - Prompts must tell the AI: "CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH".
@@ -98,8 +101,8 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
    - Mark exactly one `isPeak: true`; backend provider services currently normalize the peak to the highest `high`, tie-breaking by `close`.
 
 7. Produce report artifacts from computed data only:
-   - A professional report must consume confirmed `BaZiResult`, `AnalysisResult`, compatibility results, or auspicious-timing feature tables.
-   - Do not let the report-generation stage recalculate pillars, true solar time, Zi Wei stars, compatibility relations, or timing candidates.
+   - A professional report must consume confirmed `BaZiResult`, `AnalysisResult`, optional Zi Wei facts, optional Western astrology facts, compatibility results, or auspicious-timing feature tables.
+   - Do not let the report-generation stage recalculate pillars, true solar time, Zi Wei stars, Western astrology placements/aspects/transits, compatibility relations, or timing candidates.
    - Include computation metadata, method notes, caveats, and source-validation status.
    - Do not offer PDF export or offline PDF rendering; this skill currently supports structured, Markdown, or HTML-style report content only.
 
@@ -110,7 +113,7 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
    - When adding, renaming, or making a field required, update `types.ts`, frontend rendering, backend prompt/schema, demo data, and validation logic together.
 
 9. Use culturally careful output:
-   - Frame BaZi/Zi Wei as cultural analysis and reflective guidance, not deterministic medical, legal, or financial advice.
+   - Frame BaZi/Zi Wei/Western astrology as cultural analysis and reflective guidance, not deterministic medical, legal, or financial advice.
    - Avoid frightening, absolute, or diagnosis-like claims.
    - For investment language, describe temperament, risk style, and timing tendencies; do not recommend specific securities or guaranteed returns.
    - For compatibility language, describe interaction dynamics and risk points; do not frame a relationship as doomed or guaranteed.
@@ -124,6 +127,7 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 - `references/true-solar-time.md`: current vs strict true solar time, equation-of-time handling, timezone design, and boundary-hour policy.
 - `references/compatibility-analysis.md`: two-chart comparison method for 合盘, 合婚, relationship fit, and partnership matching.
 - `references/ziwei-reference.md`: optional Zi Wei workflow rules, repo-verification policy, and no-assumption boundaries.
+- `references/western-astrology.md`: optional Western astrology / zodiac workflow rules, evidence gate, and BaZi cross-check policy.
 - `references/auspicious-timing.md`: workflow for day/hour granularity, event-type inputs, scoring, and output format for 吉日吉时.
 - `references/report-generation.md`: professional structured/Markdown/HTML report workflow, section structure, and QA checklist.
 - `references/agent-roles.md`: multi-school master + referee workflow, school roster, evidence packet, and synthesis rules.

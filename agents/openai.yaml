@@ -1,4 +1,4 @@
 interface:
   display_name: "bazi-skill"
-  short_description: "BaZi, Zi Wei, compatibility, and timing skill"
-  default_prompt: "Use $bazi-skill in multi-school master/referee mode to synthesize a code-computed BaZi report."
+  short_description: "BaZi, Zi Wei, astrology, compatibility, and timing skill"
+  default_prompt: "Use $bazi-skill in multi-school master/referee mode to synthesize a code-computed BaZi report with optional Zi Wei or Western astrology facts only when supplied."

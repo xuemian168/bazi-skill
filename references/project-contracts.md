@@ -57,6 +57,7 @@ Code owns all deterministic astrology/calendar facts:
 - Da Yun direction, start age, and pillars.
 - Liu Nian / candidate day / candidate hour GanZhi.
 - Zi Wei palaces, stars, Da Xian, and pattern evidence only if a tracked implementation or supplied evidence packet computes them.
+- Western astrology placements, houses, aspects, transits, synastry, and composite facts only if a tracked implementation or supplied evidence packet computes them.
 - Compatibility feature matrices.
 - Auspicious timing candidate pillars and branch/stem relations.
 
@@ -215,7 +216,7 @@ Do not reuse `AnalysisResult` for two-person compatibility. Add a pair-level con
 
 ## Report Artifact Contract
 
-Professional reports are presentation artifacts over computed data. They may include `BaZiResult`, `AnalysisResult`, optional computed Zi Wei output, compatibility output, or auspicious-timing output, but must not trigger fresh AI calculation or let AI invent deterministic facts during report composition.
+Professional reports are presentation artifacts over computed data. They may include `BaZiResult`, `AnalysisResult`, optional computed Zi Wei output, optional computed or user-confirmed Western astrology output, compatibility output, or auspicious-timing output, but must not trigger fresh AI calculation or let AI invent deterministic facts during report composition.
 
 Current scope excludes PDF export and offline PDF rendering. Keep reports as structured text, Markdown, or HTML-style content unless the user explicitly asks to reintroduce a PDF feature later.
 
@@ -231,7 +232,7 @@ For report composition:
 Always include:
 
 - "Input Data (CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH)"
-- "The BaZi chart, Da Yun, annual/day/hour pillars, and other calendar facts were computed by code. Interpret these facts only."
+- "The BaZi chart, Da Yun, annual/day/hour pillars, optional Western astrology facts, and other calendar/chart facts were computed by code or confirmed by the user. Interpret these facts only."
 - Exact 100-year timeline requirements.
 - Valid JSON only.
 - Language instruction for `zh` or `en`.
@@ -240,6 +241,6 @@ Always include:
 Avoid:
 
 - Asking the model to recalculate the chart from birth data after the user has confirmed it.
-- Asking the model to invent Liu Nian, day/hour GanZhi, Zi Wei stars, Da Yun, or compatibility relations.
+- Asking the model to invent Liu Nian, day/hour GanZhi, Zi Wei stars, Western astrology placements/aspects/transits, Da Yun, or compatibility relations.
 - Adding fields that the frontend does not render or validate.
 - Replacing deterministic local calculations with AI-generated pillars.

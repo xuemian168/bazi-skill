@@ -20,7 +20,7 @@ The chart facts, JSON, candidate tables, and report data are CONFIRMED BY USER -
 
 ## Checklist
 
-1. Does any sentence introduce uncomputed GanZhi, Da Yun, Liu Nian, Zi Wei stars, ShenSha, compatibility relation, or timing pillar?
+1. Does any sentence introduce uncomputed GanZhi, Da Yun, Liu Nian, Zi Wei stars, Western astrology placements/aspects/transits, ShenSha, compatibility relation, or timing pillar?
 2. Does every strong claim point to visible evidence?
 3. Are health, investment, legal, medical, relationship, and safety caveats present where needed?
 4. If JSON: does it match `AnalysisResult` contract and validator requirements?
