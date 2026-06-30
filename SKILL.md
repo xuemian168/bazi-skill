@@ -1,5 +1,5 @@
 ---
-name: life-kline-bazi
+name: bazi-skill
 description: Specialized workflow for Life K-Line / 人生K线 BaZi and optional Zi Wei work. Use when the user asks to build, debug, validate, or improve this lifeline-k project, BaZi 八字排盘, 四柱, 大运, 流年, 紫微斗数, 人生K线, fortune K-line JSON, AI prompt/schema alignment, lunar-javascript or optional deterministic Zi Wei chart logic, true solar time, 真太阳时, 均时差, 时辰边界, compatibility/synastry analysis, 合盘, 合婚, 八字合盘, 关系匹配, 伴侣匹配, auspicious date/hour selection, 择日, 择时, 吉日, 吉时, professional report writing, structured reports, 专业报告, 命理研报, multi-school master/referee workflows, 多流派大师, 大师会诊, 裁判综合, or asks for analysis output that must match the app's AnalysisResult contract.
 ---
 
@@ -135,11 +135,11 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 Validate a JSON file:
 
 ```bash
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/life-kline-bazi/scripts/validate_analysis_result.py" result.json
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_analysis_result.py" result.json
 ```
 
 Validate stdin with an explicit birth year:
 
 ```bash
-cat result.json | python3 "${CODEX_HOME:-$HOME/.codex}/skills/life-kline-bazi/scripts/validate_analysis_result.py" --birth-year 1990 -
+cat result.json | python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_analysis_result.py" --birth-year 1990 -
 ```
