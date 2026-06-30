@@ -1,0 +1,4 @@
+interface:
+  display_name: "bazi-skill"
+  short_description: "BaZi multi-school master reports"
+  default_prompt: "Use $bazi-skill in multi-school master/referee mode to synthesize a code-computed BaZi report."
