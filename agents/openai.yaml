@@ -1,4 +1,4 @@
 interface:
-  display_name: "bazi-skill"
+  display_name: "Life K-Line BaZi"
   short_description: "BaZi multi-school master reports"
-  default_prompt: "Use $bazi-skill in multi-school master/referee mode to synthesize a code-computed BaZi report."
+  default_prompt: "Use $life-kline-bazi in multi-school master/referee mode to synthesize a code-computed BaZi report."

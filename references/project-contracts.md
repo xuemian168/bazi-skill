@@ -1,6 +1,6 @@
-# Host Project Contracts
+# Life K-Line Project Contracts
 
-Read this when changing code, prompts, schemas, demo data, or generated analysis JSON for a host repository that uses bazi-skill.
+Read this when changing code, prompts, schemas, demo data, or generated analysis JSON for the `lifeline-k-` repository.
 
 ## Repository Anchors
 

@@ -10,7 +10,7 @@ Distilled from `ziwei-reference.md`:
 - Do not hand-code palace order, star placement, Si Hua, Da Xian, or patterns.
 - Important facts may include 命宫, 身宫, 五行局, 命主/身主, twelve palaces, major/lucky/malefic/minor stars, Da Xian age ranges, and detected patterns, but only when supplied by deterministic code or a confirmed chart.
 - Pattern vocabulary is implementation-specific. Do not mention a pattern unless it appears in the supplied evidence packet.
-- Zi Wei is secondary or cross-check evidence for bazi-skill, unless the user specifically asks for Zi Wei.
+- Zi Wei is secondary or cross-check evidence for Life K-Line, unless the user specifically asks for Zi Wei.
 
 ## System Prompt
 

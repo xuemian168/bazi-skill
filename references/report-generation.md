@@ -1,6 +1,6 @@
 # Professional Report Generation
 
-Read this when the user asks for 专业报告, 命理研报, structured report, Markdown report, HTML-style report, or a report-writing workflow for bazi-skill.
+Read this when the user asks for 专业报告, 命理研报, structured report, Markdown report, HTML-style report, or a report-writing workflow for Life K-Line.
 
 Current scope excludes PDF export and offline PDF rendering.
 
@@ -33,7 +33,7 @@ Use a professional report structure:
 1. Cover/heading: title, subject, generated date, report type, and one-line caveat.
 2. Executive summary: overall score, main attribute, 3-5 key findings, and confidence/limitations.
 3. Computed chart facts: four-pillar table, true-solar-time note, lunar date, Da Yun start age/direction.
-4. Visual summary specification: K-line chart notes, score cards, Da Yun timeline, and selected important years.
+4. Visual summary specification: Life K-Line chart notes, score cards, Da Yun timeline, and selected important years.
 5. Deep sections: investment, personality, career, wealth, feng shui/environment, relationship, health tendency, family/support.
 6. Optional modules: Zi Wei summary, compatibility report, auspicious timing table, manuscript-submission timing notes.
 7. Appendix: calculation method, AI boundary, disclaimer, and raw key facts used for interpretation.

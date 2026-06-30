@@ -1,6 +1,6 @@
 # BaZi Domain Reference
 
-Read this for concise BaZi tables and rules needed by bazi-skill prompts, explanations, or lightweight verification. For normal host-project execution, prefer `lunar-javascript` or another deterministic library over manual calculation.
+Read this for concise BaZi tables and rules needed by Life K-Line prompts, explanations, or lightweight verification. For normal app execution, prefer `lunar-javascript` over manual calculation.
 
 ## Ten Heavenly Stems
 
@@ -77,7 +77,7 @@ Ten gods are computed relative to the day stem:
 | Target controls day master | 七杀 | 正官 |
 | Target generates day master | 偏印 | 正印 |
 
-K-line analysis dimensions can map ten gods to themes:
+Life K-Line dimensions can map ten gods to themes:
 
 - 比劫: peers, competition, self-drive.
 - 食伤: expression, output, skill, children themes.

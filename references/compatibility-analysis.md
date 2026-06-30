@@ -194,7 +194,7 @@ interface CompatibilityResult {
 
 ## Implementation Notes For This Project
 
-If adding this to a host project:
+If adding this to `lifeline-k-`:
 
 - Add a dedicated `compatibilityService.ts` rather than embedding it in single-person analysis.
 - Reuse `calculateBaZi`, `calculateWuXingEnergy`, `calculateShiShen`, and branch-relation constants from `utils/wuxing.ts`.

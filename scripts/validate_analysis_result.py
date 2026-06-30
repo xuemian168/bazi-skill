@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a K-line AnalysisResult JSON payload."""
+"""Validate a Life K-Line AnalysisResult JSON payload."""
 
 from __future__ import annotations
 
