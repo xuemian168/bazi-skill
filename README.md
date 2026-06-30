@@ -1,12 +1,19 @@
-# bazi-skill
+# bazi-skill: 八字排盘、紫微斗数、合盘与择日择时 Skill
 
-`bazi-skill` 是一套可复用的 Codex / Claude Code Skill，用于把八字、可选紫微事实、运势 K-line JSON、合盘、择日择时和专业报告流程串成一套可执行工作流。紫微事实只有在代码已计算或用户提供确认盘时才能使用；当前不提供 PDF 导出能力。
+主打一个：用最科学的方式，做最不科学的事情。
+
+**网页版 / Web App**: [dockon.de](https://dockon.de)  
+**GitHub**: [xuemian168/bazi-skill](https://github.com/xuemian168/bazi-skill)
+
+`bazi-skill` 是一套可复用的 Codex / Claude Code Skill，用于八字排盘、四柱命理、真太阳时、可选紫微斗数事实、运势 K-line JSON、合盘合婚、择日择时和专业命理报告工作流。紫微事实只有在代码已计算或用户提供确认盘时才能使用；当前不提供 PDF 导出能力。
+
+关键词：八字排盘、四柱、紫微斗数、真太阳时、合盘、合婚、择日、择时、吉日吉时、Codex Skill、Claude Code Skill、BaZi、Zi Wei Dou Shu、Chinese astrology、true solar time。
 
 运行入口仍然是 `SKILL.md`。本 README 只作为人读版说明，方便快速了解这个 skill 能做什么、有哪些约束、以及常用命令在哪里。
 
 ## 安装方式
 
-下面的 `<repo-url>` 替换为实际仓库地址，例如 `https://github.com/<your-github-user>/bazi-skill.git`。
+仓库地址：`https://github.com/xuemian168/bazi-skill.git`
 
 ### 安装到 Codex
 
@@ -14,7 +21,7 @@ Codex 会从 `${CODEX_HOME:-$HOME/.codex}/skills` 发现本地 skill：
 
 ```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-git clone <repo-url> "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
+git clone https://github.com/xuemian168/bazi-skill.git "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 ```
 
 如果已经下载到本地，也可以直接复制：
@@ -32,7 +39,7 @@ cp -R /path/to/bazi-skill "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 
 ```bash
 mkdir -p .claude/skills
-git clone <repo-url> .claude/skills/bazi-skill
+git clone https://github.com/xuemian168/bazi-skill.git .claude/skills/bazi-skill
 ```
 
 安装后在 Claude Code 中使用：

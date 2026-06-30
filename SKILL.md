@@ -1,16 +1,16 @@
 ---
 name: bazi-skill
-description: Specialized workflow for Life K-Line / 人生K线 BaZi and optional Zi Wei work. Use when the user asks to build, debug, validate, or improve this lifeline-k project, BaZi 八字排盘, 四柱, 大运, 流年, 紫微斗数, 人生K线, fortune K-line JSON, AI prompt/schema alignment, lunar-javascript or optional deterministic Zi Wei chart logic, true solar time, 真太阳时, 均时差, 时辰边界, compatibility/synastry analysis, 合盘, 合婚, 八字合盘, 关系匹配, 伴侣匹配, auspicious date/hour selection, 择日, 择时, 吉日, 吉时, professional report writing, structured reports, 专业报告, 命理研报, multi-school master/referee workflows, 多流派大师, 大师会诊, 裁判综合, or asks for analysis output that must match the app's AnalysisResult contract.
+description: Specialized workflow for BaZi 八字, Four Pillars 四柱, optional Zi Wei Dou Shu 紫微斗数 evidence, K-line style fortune JSON, true solar time 真太阳时, compatibility/synastry 合盘合婚, auspicious date/hour selection 择日择时, professional report writing, structured reports, 命理研报, and multi-school master/referee workflows 多流派大师/裁判综合. Use when the user asks to build, debug, validate, or improve a host project that computes chart facts with code and asks AI only to interpret confirmed facts.
 ---
 
-# Life K-Line BaZi
+# bazi-skill
 
-Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and "Life Stock Market" K-line work. Preserve the app's existing source-of-truth split: local libraries calculate charts; AI writes structured interpretation against a confirmed chart.
+Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and K-line style fortune workflows. Preserve the source-of-truth split: local libraries calculate charts; AI writes structured interpretation against a confirmed chart.
 
 ## Workflow
 
 1. Classify the task:
-   - Code change in `lifeline-k-`: read the repository docs and the touched modules before editing. Start with `CLAUDE.md`, then the relevant `components/CLAUDE.md`, `services/CLAUDE.md`, `types/CLAUDE.md`, or `constants/CLAUDE.md` if present.
+   - Code change in a host project: read the repository docs and the touched modules before editing. Start with `CLAUDE.md` if present, then the relevant `components/CLAUDE.md`, `services/CLAUDE.md`, `types/CLAUDE.md`, or `constants/CLAUDE.md` if present.
    - Skill or workflow architecture change, including requests to reference `ai-berkshire`, a multi-agent research/team pattern, multi-school masters, 大师会诊, or 裁判综合: update this skill or related skill docs first; do not change frontend/backend application code unless the user explicitly asks for implementation.
    - Analysis JSON generation, repair, or validation: read `references/project-contracts.md`, then run `scripts/validate_analysis_result.py` on any candidate JSON.
    - BaZi rules, prompt wording, scoring logic, or domain explanation: read `references/bazi-domain-reference.md`, then `references/analysis-methods.md` when the task needs interpretation or ranking.
@@ -89,7 +89,7 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
    - For deeper current-period analysis, use the current date, current Da Yun, current Liu Nian, and Liu Yue/Liu Ri when relevant, but keep the confirmed birth chart and Da Yun as source of truth.
    - Do not invent the user's current problem. If the user has not supplied a focus area, ask before giving a detailed current-life judgment.
 
-6. Preserve the Life K-Line contract:
+6. Preserve the K-line `AnalysisResult` contract:
    - Output must be valid JSON, no markdown.
    - Include all top-level `AnalysisResult` fields documented in `references/project-contracts.md`.
    - `timeline` must contain exactly 100 entries, birth year through birth year + 99, ages 1 through 100.
@@ -128,7 +128,7 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 - `references/report-generation.md`: professional structured/Markdown/HTML report workflow, section structure, and QA checklist.
 - `references/agent-roles.md`: multi-school master + referee workflow, school roster, evidence packet, and synthesis rules.
 - `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the referee and each school master.
-- `scripts/validate_analysis_result.py`: deterministic validator for candidate Life K-Line `AnalysisResult` JSON.
+- `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
 
 ## Useful Commands
 

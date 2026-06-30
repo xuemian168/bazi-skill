@@ -1,6 +1,6 @@
 # Zi Wei Reference
 
-Read this for Life K-Line Zi Wei / 紫微斗数 work. Zi Wei is optional in the current skill because the tracked repository may not contain a Zi Wei service or UI module.
+Read this for bazi-skill Zi Wei / 紫微斗数 work. Zi Wei is optional because the host repository may not contain a Zi Wei service or UI module.
 
 ## Repo Verification Gate
 

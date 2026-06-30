@@ -102,7 +102,7 @@ Do not ask the model to invent calendar data. Compute or supply the day/hour pil
 
 ## Implementation Notes For This Project
 
-If adding this to `lifeline-k-`:
+If adding this to a host project:
 
 - Add a dedicated service such as `services/auspiciousTimingService.ts` rather than mixing it into `baziService.ts`.
 - Keep deterministic calendar calculation local.
