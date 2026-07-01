@@ -25,7 +25,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
 2. Apply an information-completeness gate before analysis, JSON generation, report rendering, or multi-agent work:
    - If required user information is missing, ask follow-up questions before proceeding. Do not guess birth facts, chart facts, event constraints, relationship counterpart data, or report scope.
    - Ask only the missing essentials, preferably 1-3 concise questions at a time.
-   - For normal BaZi calculation, required essentials are: gender, birth date, birth time, calendar type (solar/lunar if ambiguous), birthplace or longitude/timezone basis, and whether true solar time should use the current legacy method or strict apparent solar time when that distinction matters. For Zi Wei, first verify that the current repo actually contains a tracked implementation and contract; otherwise treat Zi Wei as unavailable or planned. For Western astrology, first verify a tracked ephemeris/service or require a user-confirmed astrology chart; otherwise treat it as unavailable or planned.
+   - For normal BaZi calculation, required essentials are: gender, birth date, birth time, calendar type (solar/lunar if ambiguous), birthplace plus longitude/timezone basis, and whether true solar time should use the current legacy method or strict apparent solar time when that distinction matters. City-level birthplace is acceptable by default only when it resolves to a longitude; for boundary-hour or professional requests, prefer district/township, map point, hospital, or manual longitude. For Zi Wei, first verify that the current repo actually contains a tracked implementation and contract; otherwise treat Zi Wei as unavailable or planned. For Western astrology, first verify a tracked ephemeris/service or require a user-confirmed astrology chart; otherwise treat it as unavailable or planned.
    - For professional-mode chart input, required essentials are: four pillars and gender. Birth year, startAge, direction, and daYun can use documented defaults only when the user accepts approximate/professional-mode behavior.
    - For compatibility/synastry, require both people’s chart inputs or confirmed charts plus the relationship goal/context.
    - For auspicious timing, require event type, candidate date range, location/timezone, and any hard constraints before ranking dates/hours.
@@ -74,6 +74,7 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 
 3. Keep calculation authority local:
    - Normal birth input uses `services/baziService.ts` with `lunar-javascript`.
+   - `birthLocation` is provenance/display text; `longitude` is the actual calculation input for current solar-time correction.
    - Convert lunar input to solar before true-solar-time adjustment.
    - Current project true-solar-time behavior is a legacy longitude correction: `clock time + (longitude - 120) * 4 minutes`.
    - For strict apparent solar time, add timezone-standard-meridian handling and equation-of-time correction; see `references/true-solar-time.md`.

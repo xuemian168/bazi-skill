@@ -36,9 +36,22 @@ Zi Wei note: do not assume `services/ziweiService.ts`, `components/ZiWeiChartPan
 
 `ProfessionalInput` accepts user-entered pillars and optional `birthYear`, `startAge`, `direction`, `daYun`. In this mode, the app builds a pseudo `UserInput` for compatibility. Do not infer that pseudo `birthDate`, `birthTime`, or longitude are real birth facts.
 
+## Birthplace Precision Contract
+
+Birthplace precision is controlled by `longitude`, not by the display string in `birthLocation`.
+
+Recommended tiers:
+
+- Default: city-level lookup is acceptable if it resolves to a numeric longitude.
+- Precision: district/county/township, hospital, or map-selected point should be used when available.
+- Professional: allow manual longitude and timezone/solar-time mode for boundary-hour or report-grade work.
+
+`birthLocation` should remain user-facing provenance such as "Hangzhou" or "Hangzhou, Zhejiang". `longitude` must be stored as the source-of-truth calculation value. A longitude difference of 1 degree equals 4 minutes of solar-time correction, so city-level lookup is usually enough unless the birth time is close to a two-hour branch boundary.
+
 ## Calculation Contract
 
 - Lunar input is converted to solar with `Lunar.fromYmd(...).getSolar()` before true solar time.
+- True-solar-time correction uses the numeric `longitude`; do not derive calculation precision from the text granularity of `birthLocation`.
 - Current app mode uses a legacy longitude-only correction: `(longitude - 120) * 4` minutes added to clock time. Treat this as compatibility behavior, not full astronomical apparent solar time.
 - Strict apparent solar time requires timezone-standard-meridian correction plus equation of time. See `references/true-solar-time.md`.
 - Four pillars come from `lunar.getEightChar()`: `getYearGan/Zhi`, `getMonthGan/Zhi`, `getDayGan/Zhi`, `getTimeGan/Zhi`.
@@ -78,6 +91,7 @@ If implementing strict true solar time:
 
 - Add `solarTimeMode` with values like `legacy-cn-meridian`, `local-mean-solar`, and `strict-apparent-solar`.
 - Add `timezoneOffsetMinutes` or an IANA timezone identifier to normal-mode inputs.
+- Add optional `locationPrecision` metadata such as `city`, `district`, `township`, `map-point`, or `manual-longitude`.
 - Include `solarTimeMode` and timezone data in cache keys because they can change the hour pillar and analysis.
 - Return a structured `SolarTimeResult` with longitude correction, equation-of-time correction, total offset, and boundary warning.
 - Show both hour-pillar possibilities when adjusted time is near a two-hour boundary or strict and legacy modes disagree.
