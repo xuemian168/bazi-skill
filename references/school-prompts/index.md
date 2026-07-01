@@ -35,7 +35,7 @@ If raw birth data is included, treat it as provenance only. The computed chart f
 | 子平格局 | `ziping-pattern-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `AlgorithmGuide.tsx` |
 | 旺衰扶抑 | `strength-balance-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.md` |
 | 调候 | `tiaohou-season-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `true-solar-time.md` |
-| 盲派象法 | `xiangfa-blind-master.md` | `analysis-methods.md`, `compatibility-analysis.md` position/branch methods |
+| 盲派象法 | `xiangfa-blind-master.md` | `xiangfa-system/source-map.md`, `xiangfa-system/coverage-map.md`, selected `xiangfa-system/*` slices, `analysis-methods.md`, `compatibility-analysis.md` |
 | 刑冲合害细分 | `branch-relation-master.md` | `analysis-methods.md`, `compatibility-analysis.md`, `common-schools.md` |
 | 神煞辅助 | `shensha-support-master.md` | `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.md` limitation note |
 | 纳音辅助 | `nayin-support-master.md` | `common-schools.md`, `bazi-domain-reference.md` |

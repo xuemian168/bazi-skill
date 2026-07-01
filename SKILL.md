@@ -14,6 +14,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
    - Skill or workflow architecture change, including requests to reference `ai-berkshire`, a multi-agent research/team pattern, multi-school masters, 大师会诊, 主理规划师, or 主理官综合: update this skill or related skill docs first; do not change frontend/backend application code unless the user explicitly asks for implementation.
    - Analysis JSON generation, repair, or validation: read `references/project-contracts.md`, then run `scripts/validate_analysis_result.py` on any candidate JSON.
    - BaZi rules, prompt wording, scoring logic, or domain explanation: read `references/bazi-domain-reference.md`, then `references/analysis-methods.md` when the task needs interpretation or ranking.
+   - 盲派象法, 象法体系, concrete imagery, 宫位象, 十神象, or requests to make 象法 more complete/source-bounded: read `references/xiangfa-system/source-map.md`, then `references/xiangfa-system/coverage-map.md`, then only the required slice files.
    - True solar time, strict apparent solar time, timezone, longitude correction, equation of time, or boundary-hour issues: read `references/true-solar-time.md`; if implementing, also read `references/project-contracts.md`.
    - Zi Wei chart logic, palace display, or pattern wording: read `references/ziwei-reference.md`.
    - Western astrology, zodiac signs, star signs, 星座, 西洋占星, natal chart, ascendant, moon sign, aspects, transits, or astrology synastry: read `references/western-astrology.md`.
@@ -141,6 +142,7 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 - `references/auspicious-timing.md`: workflow for day/hour granularity, event-type inputs, scoring, and output format for 吉日吉时.
 - `references/report-generation.md`: professional structured/Markdown/HTML report workflow, section structure, and QA checklist.
 - `references/agent-roles.md`: multi-school master + orchestrator workflow, school roster, evidence packet, and synthesis rules.
+- `references/xiangfa-system/`: source map, coverage map, and local rule slices for source-bounded 盲派象法 / 象法 scene language.
 - `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the orchestrator and each school master.
 - `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
 
