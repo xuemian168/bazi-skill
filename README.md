@@ -5,6 +5,8 @@
 **网页版 / Web App**: [dockon.de](https://dockon.de)  
 **GitHub**: [xuemian168/bazi-skill](https://github.com/xuemian168/bazi-skill)
 
+说明：`dockon.de` 是网页版产品层，核心是确定性精确计算 + prompt engineering；它本身不是 harness。本文所说的 harness 指 `bazi-skill` 这套面向 Codex / Claude Code 的工作流编排层，用来组织事实计算、证据包、多流派角色、主理规划与结果校验。
+
 `bazi-skill` 是一套可复用的 Codex / Claude Code Skill，用于八字排盘、四柱命理、真太阳时、可选紫微斗数事实、可选西洋占星/星座事实、可选纳音/刑冲合害/奇门遁甲/六爻事实、运势 K-line JSON、合盘合婚、择日择时和专业命理报告工作流。紫微、星座/占星、奇门和六爻等事实只有在代码已计算或用户提供确认盘/卦时才能使用；当前不提供 PDF 导出能力。
 
 关键词：八字排盘、四柱、紫微斗数、星座、西洋占星、现代占星、传统占星、纳音、刑冲合害、奇门遁甲、六爻、真太阳时、合盘、合婚、择日、择时、吉日吉时、Codex Skill、Claude Code Skill、BaZi、Zi Wei Dou Shu、Qi Men Dun Jia、Liu Yao、Western astrology、zodiac signs、natal chart、synastry、Chinese astrology、true solar time。
