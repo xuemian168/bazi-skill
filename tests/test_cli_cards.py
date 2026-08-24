@@ -47,5 +47,16 @@ class CliCardsTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
 
 
+class CliAnswerTest(unittest.TestCase):
+    def test_unreadable_answer_file_exits_two(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            answer_path = Path(tmp) / "answer.txt"
+            answer_path.write_bytes(b"citations: DTS-0001\n\xff\xfe not valid utf-8\n")
+            result = run_cli(
+                "--answer", str(answer_path), "--classics-root", str(FIXTURES)
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

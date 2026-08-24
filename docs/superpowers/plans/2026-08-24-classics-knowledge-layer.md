@@ -1694,7 +1694,12 @@ def run_answer_mode(answer_path: str, classics_root: Path) -> int:
         print(f"缺少卡片目录: {cards_dir}", file=sys.stderr)
         return 2
 
-    cards, parse_errors = load_cards(cards_dir)
+    try:
+        cards, parse_errors = load_cards(cards_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"无法读取卡片文件: {exc}", file=sys.stderr)
+        return 2
+
     if parse_errors:
         print("卡片库本身无效，先修复后再校验答案：", file=sys.stderr)
         for error in parse_errors:
@@ -1708,10 +1713,22 @@ def run_answer_mode(answer_path: str, classics_root: Path) -> int:
         if not path.is_file():
             print(f"找不到答案文件: {path}", file=sys.stderr)
             return 2
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception as exc:  # noqa: BLE001
+            print(f"无法读取答案文件: {exc}", file=sys.stderr)
+            return 2
 
     return report(check_answer(parse_answer(text), cards))
 ```
+
+Guarded per Task 5's precedent (`run_cards_mode` already wraps `load_cards`):
+calling `load_cards()` or `path.read_text()` without exception handling lets
+a decoding/permission error raise uncaught, producing a raw traceback and
+Python's default exit code 1 — indistinguishable from a legitimate `INVALID`
+result. Both read points here get the same try/except → stderr → `return 2`
+treatment, keeping the 0/1/2 exit-code contract intact. Covered by
+`tests/test_cli_cards.py::CliAnswerTest::test_unreadable_answer_file_exits_two`.
 
 ```python
 def main() -> int:
@@ -1743,7 +1760,9 @@ def main() -> int:
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，50 tests
+Expected: PASS，56 tests（42 基线 + 13 个 `test_checks_answer.py` + 1 个
+`CliAnswerTest::test_unreadable_answer_file_exits_two`，覆盖 `run_answer_mode`
+对答案文件的读取防护）
 
 端到端手工验证：
 
