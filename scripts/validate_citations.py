@@ -58,7 +58,11 @@ def run_answer_mode(answer_path: str, classics_root: Path) -> int:
         return 2
 
     if answer_path == "-":
-        text = sys.stdin.read()
+        try:
+            text = sys.stdin.read()
+        except Exception as exc:  # noqa: BLE001
+            print(f"无法读取标准输入: {exc}", file=sys.stderr)
+            return 2
     else:
         path = Path(answer_path)
         if not path.is_file():
@@ -94,7 +98,7 @@ def main() -> int:
     parser.add_argument("--count", action="store_true", help="Print parsed card count")
     args = parser.parse_args()
 
-    if args.cards:
+    if args.cards is not None:
         return run_cards_mode(Path(args.cards), args.count)
     return run_answer_mode(args.answer, Path(args.classics_root))
 

@@ -1409,7 +1409,7 @@ import textwrap
 import unittest
 
 from classics.cards import Card, CorpusRef, Rival
-from classics.checks_answer import check_answer, parse_answer
+from classics.checks_answer import NO_BASIS, check_answer, parse_answer
 
 
 def card(card_id: str, tier: str, rivals=()) -> Card:
@@ -1541,6 +1541,261 @@ class CheckAnswerTest(unittest.TestCase):
         self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
 
 
+class ContinuationTerminationTest(unittest.TestCase):
+    """Critical #1: a blank line ends a citation_fit/rival_resolution block,
+    and continuation lines must be indented and start with the card id —
+    not merely mention one anywhere later in the document."""
+
+    def test_report_index_table_does_not_satisfy_citation_fit_or_rival_resolution(self):
+        # The decisive case from the finding: a report's 依据索引 table
+        # lists every cited id by construction. Before the fix, an empty
+        # citation_fit block and a missing rival_resolution both got
+        # silently satisfied by the table rows that followed.
+        text = textwrap.dedent(
+            """\
+            citations: DTS-0001, ZPZQ-0001
+            citation_fit:
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            | ZPZQ-0001 | 子平真诠 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("citation_fit" in e for e in errors), errors)
+        self.assertTrue(any("rival_resolution" in e for e in errors), errors)
+
+    def test_placeholder_rival_resolution_is_not_satisfied_by_later_prose(self):
+        text = (
+            "citations: DTS-0001, ZPZQ-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n  ZPZQ-0001 — 理由\n"
+            "rival_resolution: 见下表\n"
+            "\n"
+            "完整说明另见 DTS-0001 与 ZPZQ-0001 相关条目。\n"
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("rival_resolution" in e for e in errors), errors)
+
+
+class FieldRecognitionTest(unittest.TestCase):
+    """Critical #2: field keys are recognised case-insensitively and when
+    indented, by lowercasing the matched key — not by checking it against a
+    closed vocabulary. Round 1 tried a closed vocabulary (KNOWN_FIELDS) and
+    rejected any other field-shaped line as an error; that rejected every
+    real school-prompt Output Shape, which emits many fields this module
+    doesn't otherwise care about (scope, core_thesis, confidence, ...).
+    Round 2 replaced it with plain normalise-and-ignore: an unrecognised
+    key is stored and ignored, exactly as an unindented lowercase one
+    always was."""
+
+    def test_capitalised_pattern_call_is_recognised(self):
+        text = (
+            "citations: SMTH-0001\n"
+            "citation_fit:\n  SMTH-0001 — 理由\n"
+            "Pattern_call: formal_pattern\n"
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("层级" in e for e in errors), errors)
+
+    def test_indented_pattern_call_is_recognised(self):
+        text = (
+            "citations: SMTH-0001\n"
+            "citation_fit:\n  SMTH-0001 — 理由\n"
+            "  pattern_call: formal_pattern\n"
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("层级" in e for e in errors), errors)
+
+    def test_unrelated_field_is_stored_and_ignored_not_reported_as_an_error(self):
+        text = (
+            "citations: DTS-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n"
+            "confidence: medium\n"
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+
+class NoClassicalBasisTest(unittest.TestCase):
+    """Critical #3: no_classical_basis must match the whole value, not
+    appear as a substring; and it may not coexist with real citation ids."""
+
+    def test_hint_comment_left_on_the_line_does_not_disable_checks(self):
+        text = "citations: DTS-9999   # 或 no_classical_basis\n"
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("DTS-9999" in e for e in errors), errors)
+
+    def test_no_classical_basis_mixed_with_real_ids_is_reported(self):
+        text = "citations: DTS-0001, no_classical_basis\ncitation_fit:\n  DTS-0001 — 理由\n"
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any(NO_BASIS in e for e in errors), errors)
+
+    def test_no_classical_basis_glued_to_cjk_text_is_still_detected_as_mixed(self):
+        # Round 3: NO_BASIS_TOKEN used \b, the exact construct Important #5
+        # established as unreliable at a CJK/ASCII boundary in this module.
+        # \b does not fire between "用" and "n", so a token glued directly
+        # onto Chinese prose with no separating space used to silently skip
+        # this diagnostic (the citation ids themselves were still checked
+        # normally either way — this only loses the supplementary hint).
+        text = "citations: DTS-0001且无引用no_classical_basis\ncitation_fit:\n  DTS-0001 — 理由\n"
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any(NO_BASIS in e for e in errors), errors)
+
+
+class UnspacedCjkCardIdTest(unittest.TestCase):
+    """Important #5: \\b does not fire between a CJK character and an ASCII
+    letter/digit, so ids embedded in unspaced Chinese prose must still be
+    found via lookaround rather than \\b."""
+
+    def test_unspaced_cjk_prose_ids_are_detected_in_report_body(self):
+        text = textwrap.dedent(
+            """\
+            本造依DTS-0001定格，又参SMTH-0001之例。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(
+            any("依据索引" in e and "SMTH-0001" in e for e in errors), errors
+        )
+
+
+class ReportWindowAnchorTest(unittest.TestCase):
+    """Important #6: the 依据索引 anchor must be a heading-shaped line, and
+    the last such line wins over an earlier one."""
+
+    def test_prose_mention_without_a_heading_is_not_report_mode(self):
+        text = (
+            "citations: DTS-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n"
+            "完整出处详见依据索引说明文档。\n"
+        )
+        answer = parse_answer(text)
+        self.assertFalse(answer["is_report"])
+
+    def test_repeated_heading_uses_the_last_occurrence(self):
+        text = textwrap.dedent(
+            """\
+            ## 依据索引
+
+            正文提到 ZPZQ-0001，最终依据见下方表格。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(
+            any("依据索引" in e and "ZPZQ-0001" in e for e in errors), errors
+        )
+
+    def test_trailing_comment_after_heading_marker_is_detected(self):
+        # Round 3: the brief's own canonical marker line (task-6-brief.md:24)
+        # carries a trailing comment explaining the marker's purpose. The
+        # round-1/2 heading regex required the line to end immediately
+        # after 依据索引, so an input written exactly as the brief's own
+        # documentation shows was not detected as a report at all, silently
+        # skipping rule 6 entirely.
+        text = (
+            "citations: DTS-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n"
+            "依据索引                                # 报告型输入的判别标记\n"
+            "| DTS-0001 | 滴天髓 | 原文 | 理由 |\n"
+        )
+        answer = parse_answer(text)
+        self.assertTrue(answer["is_report"])
+        self.assertEqual(check_answer(answer, LIBRARY), [])
+
+
+class DuplicateCitationsFieldTest(unittest.TestCase):
+    """Important #7: a repeated citations: key (e.g. from an aggregated
+    multi-persona document) must be reported, not silently overwritten."""
+
+    def test_duplicate_citations_field_is_reported(self):
+        text = (
+            "citations: DTS-9999\n"
+            "citation_fit:\n  DTS-9999 — 理由\n"
+            "citations: DTS-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n"
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("citations" in e and "多次" in e for e in errors), errors)
+
+
+class InlineCitationFitTest(unittest.TestCase):
+    """Minor #9: citation_fit written on a single line (the natural way to
+    write one citation) must still be counted, not just the multi-line
+    indented form."""
+
+    def test_inline_citation_fit_single_line_is_recognised(self):
+        text = "citations: DTS-0001\ncitation_fit: DTS-0001 — 月令齐备\n"
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+
+# The realistic Output Shape below is what round 1's KNOWN_FIELDS closed
+# vocabulary rejected outright: every field here is one the current
+# references/school-prompts/*.md Output Shape blocks already require, and
+# round 1 flagged seven of them (scope, core_thesis, supporting_evidence,
+# counter_evidence, warnings, confidence, recommended_wording) as
+# "无法识别的字段". This is the test whose absence let that ship.
+REALISTIC_MASTER_OUTPUT = textwrap.dedent(
+    """\
+    school: ziping-pattern-master
+    scope: 全局
+    core_thesis: 月令为寅
+    pattern_call: pattern_tendency
+    supporting_evidence: 略
+    counter_evidence: 略
+    warnings: 略
+    citations: DTS-0001
+    citation_fit:
+      DTS-0001 — 月令与藏干齐备
+    confidence: medium
+    recommended_wording: 略
+    """
+)
+
+
+class RealisticMasterOutputShapeTest(unittest.TestCase):
+    def test_full_school_prompt_output_shape_with_many_fields_passes(self):
+        self.assertEqual(
+            check_answer(parse_answer(REALISTIC_MASTER_OUTPUT), LIBRARY), []
+        )
+
+
+class ContinuationLineIsNotAFieldTest(unittest.TestCase):
+    """Round 2's flagged interaction with round 1's continuation-state
+    fix: a citation_fit continuation line is indented and starts with an
+    uppercase card id followed by a space and an em dash, not by a colon,
+    so FIELD must not match it — verified explicitly rather than reasoned
+    about, including a reason string that itself contains a colon
+    (adversarial: if FIELD somehow matched past the id, this colon later
+    in the line would be the next thing it could latch onto)."""
+
+    def test_indented_citation_fit_continuation_is_not_parsed_as_a_field(self):
+        text = (
+            "citations: DTS-0001, ZPZQ-0001\n"
+            "citation_fit:\n"
+            "  DTS-0001 — 例如：月令与藏干需要匹配\n"
+            "  ZPZQ-0001 — 日干与月令地支均已确认\n"
+            "rival_resolution: ZPZQ-0001 over DTS-0001 — 本任务以定格为目标\n"
+        )
+        answer = parse_answer(text)
+        # If the first continuation line had been mis-parsed as a field,
+        # `current` would no longer be "citation_fit" by the time the
+        # second continuation line is reached, and ZPZQ-0001 would be
+        # silently dropped from citation_fit_ids.
+        self.assertEqual(answer["citation_fit_ids"], ["DTS-0001", "ZPZQ-0001"])
+        self.assertEqual(check_answer(answer, LIBRARY), [])
+
+
 if __name__ == "__main__":
     unittest.main()
 ```
@@ -1572,41 +1827,99 @@ import re
 
 from .cards import Card
 
-CARD_ID = re.compile(r"\b([A-Z]{3,4}-\d{4})\b")
-FIELD = re.compile(r"^([a-z_]+)\s*[:：]\s*(.*)$")
-INDEX_HEADING = re.compile(r"依据索引")
+_CARD_ID_CORE = r"[A-Z]{3,4}-\d{4}"
+# Lookaround instead of \b: \b does not fire between a CJK character and an
+# ASCII letter/digit (both count as \w), so unspaced Chinese prose like
+# "依DTS-0001定格" would otherwise hide the id entirely.
+CARD_ID = re.compile(rf"(?<![A-Za-z0-9])({_CARD_ID_CORE})(?![A-Za-z0-9-])")
+# A continuation line of a citation_fit/rival_resolution block: indented,
+# and starting with a card id (not merely containing one somewhere).
+CONTINUATION = re.compile(rf"^\s+({_CARD_ID_CORE})(?![A-Za-z0-9-])")
+FIELD = re.compile(r"^\s*([A-Za-z_]+)\s*[:：]\s*(.*)$")
+# A bare heading line: "依据索引" alone, or a markdown ATX heading of it,
+# with an optional trailing comment (the brief's own canonical example is
+# "依据索引                                # 报告型输入的判别标记" — a line
+# ending immediately after the heading text would miss that literal form).
+# Anchoring to the whole line (rather than a substring search) means a
+# table of contents entry or a closing sentence that merely mentions the
+# heading text does not get mistaken for the section boundary.
+INDEX_HEADING = re.compile(r"^\s*(?:#{1,6}\s*)?依据索引\s*(?:#.*)?$")
 NO_BASIS = "no_classical_basis"
+# Lookaround instead of \b, for the same reason CARD_ID uses it: \b does
+# not fire between a CJK character and an ASCII letter/digit, so
+# "无引用no_classical_basis" (no space before the token) would otherwise
+# never match.
+NO_BASIS_TOKEN = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(NO_BASIS)}(?![A-Za-z0-9_])")
 
 
 def parse_answer(text: str) -> dict[str, object]:
     """Extract the citation-relevant shape of an answer or report."""
     lines = text.splitlines()
     fields: dict[str, str] = {}
+    citations_field_count = 0
     fit_ids: list[str] = []
     rival_resolutions: list[str] = []
     current: str | None = None
     index_start: int | None = None
 
     for offset, raw in enumerate(lines):
-        if index_start is None and INDEX_HEADING.search(raw):
+        if INDEX_HEADING.match(raw):
+            # Last occurrence wins: an earlier heading-shaped line (e.g. a
+            # template block quoted for illustration) should not anchor the
+            # window ahead of the real, final section.
             index_start = offset
+
+        if not raw.strip():
+            # A blank line always ends a citation_fit/rival_resolution
+            # continuation block; without this, every non-blank line to
+            # end-of-document keeps getting scanned for card ids under
+            # whichever field was last seen (including 依据索引 table
+            # rows, which would then auto-satisfy citation_fit/rival
+            # checks on every report by construction).
+            current = None
+            continue
+
         field = FIELD.match(raw)
         if field:
-            key, value = field.group(1), field.group(2).strip()
+            # Lowercasing here (rather than restricting to a closed
+            # vocabulary) is the whole fix: it makes `Pattern_call:` and
+            # `  pattern_call:` normalise to the same key as `pattern_call:`
+            # so rule 4's tier gate still runs. A field the module doesn't
+            # otherwise care about (e.g. `confidence:`, `scope:` — real
+            # fields the school-prompt Output Shapes already emit) is
+            # simply stored and ignored, exactly as before this fix round;
+            # there is no vocabulary to be missing from.
+            key = field.group(1).lower()
+            value = field.group(2).strip()
             current = key
-            if key == "rival_resolution" and value:
-                rival_resolutions.append(value)
+            if key == "citations":
+                citations_field_count += 1
+                fields[key] = value
+            elif key == "citation_fit":
+                fields[key] = value
+                if value:
+                    fit_ids.extend(CARD_ID.findall(value))
+            elif key == "rival_resolution":
+                if value:
+                    rival_resolutions.append(value)
             else:
                 fields[key] = value
             continue
-        if current == "citation_fit" and raw.strip():
+
+        continuation = CONTINUATION.match(raw)
+        if not continuation:
+            continue
+        if current == "citation_fit":
             fit_ids.extend(CARD_ID.findall(raw))
-        elif current == "rival_resolution" and raw.strip():
+        elif current == "rival_resolution":
             rival_resolutions.append(raw.strip())
 
     raw_citations = fields.get("citations")
-    no_basis = raw_citations is not None and NO_BASIS in raw_citations
+    no_basis = raw_citations is not None and raw_citations.strip() == NO_BASIS
     citations = [] if no_basis else CARD_ID.findall(raw_citations or "")
+    mixed_basis = bool(citations) and bool(
+        NO_BASIS_TOKEN.search(raw_citations or "")
+    )
 
     body_ids: list[str] = []
     index_ids: list[str] = []
@@ -1617,6 +1930,7 @@ def parse_answer(text: str) -> dict[str, object]:
     return {
         "has_citations_field": raw_citations is not None,
         "no_classical_basis": no_basis,
+        "mixed_no_classical_basis": mixed_basis,
         "citations": citations,
         "citation_fit_ids": fit_ids,
         "pattern_call": fields.get("pattern_call", ""),
@@ -1624,6 +1938,7 @@ def parse_answer(text: str) -> dict[str, object]:
         "is_report": index_start is not None,
         "body_ids": body_ids,
         "index_ids": index_ids,
+        "duplicate_citations_field": citations_field_count > 1,
     }
 
 
@@ -1632,6 +1947,15 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
     errors: list[str] = []
     by_id = {card.id: card for card in cards}
     citations: list[str] = answer["citations"]
+
+    if answer["duplicate_citations_field"]:
+        errors.append(
+            "`citations` 字段出现多次，请为每份分析分别校验"
+            "（不支持单份输入中出现多个 citations 块）"
+        )
+
+    if answer["mixed_no_classical_basis"]:
+        errors.append(f"`citations` 中同时出现引用 ID 与 {NO_BASIS}，请二选一")
 
     if not answer["has_citations_field"]:
         errors.append(f"缺少 `citations` 字段（无可引时应写 {NO_BASIS}）")
@@ -1707,7 +2031,11 @@ def run_answer_mode(answer_path: str, classics_root: Path) -> int:
         return 2
 
     if answer_path == "-":
-        text = sys.stdin.read()
+        try:
+            text = sys.stdin.read()
+        except Exception as exc:  # noqa: BLE001
+            print(f"无法读取标准输入: {exc}", file=sys.stderr)
+            return 2
     else:
         path = Path(answer_path)
         if not path.is_file():
@@ -1723,12 +2051,18 @@ def run_answer_mode(answer_path: str, classics_root: Path) -> int:
 ```
 
 Guarded per Task 5's precedent (`run_cards_mode` already wraps `load_cards`):
-calling `load_cards()` or `path.read_text()` without exception handling lets
-a decoding/permission error raise uncaught, producing a raw traceback and
-Python's default exit code 1 — indistinguishable from a legitimate `INVALID`
-result. Both read points here get the same try/except → stderr → `return 2`
-treatment, keeping the 0/1/2 exit-code contract intact. Covered by
-`tests/test_cli_cards.py::CliAnswerTest::test_unreadable_answer_file_exits_two`.
+calling `load_cards()`, `path.read_text()`, or `sys.stdin.read()` without
+exception handling lets a decoding/permission error raise uncaught,
+producing a raw traceback and Python's default exit code 1 —
+indistinguishable from a legitimate `INVALID` result. All three read
+points here get the same try/except → stderr → `return 2` treatment,
+keeping the 0/1/2 exit-code contract intact. Covered by
+`tests/test_cli_cards.py::CliAnswerTest::test_unreadable_answer_file_exits_two`
+and `::test_unreadable_stdin_exits_two` (the stdin test forces
+`LANG=en_US.UTF-8`/`LC_ALL=en_US.UTF-8` on the subprocess — under an
+unset/POSIX locale Python decodes stdin with surrogateescape and invalid
+bytes pass through silently with no exception at all, which would make
+the test pass whether or not the guard exists).
 
 ```python
 def main() -> int:
@@ -1752,17 +2086,178 @@ def main() -> int:
     parser.add_argument("--count", action="store_true", help="Print parsed card count")
     args = parser.parse_args()
 
-    if args.cards:
+    if args.cards is not None:
         return run_cards_mode(Path(args.cards), args.count)
     return run_answer_mode(args.answer, Path(args.classics_root))
 ```
 
+`if args.cards:` dispatches on truthiness, so `--cards ""` (e.g. from a CI
+script passing `--cards "$ROOT"` with `ROOT` unset) falls through to answer
+mode with `args.answer` still `None`, crashing `Path(None)` with a raw
+`TypeError` and exit 1 — exactly the contract violation the guards above
+exist to prevent. `if args.cards is not None:` dispatches on presence
+instead, so an empty value still reaches `run_cards_mode`'s own
+missing-directory guard and exits 2 cleanly. Covered by
+`tests/test_cli_cards.py::CliCardsTest::test_empty_cards_value_exits_two`.
+
+### Post-review hardening of `checks_answer.py`'s parser (2026-08-25)
+
+A whole-branch review of Task 6 found the `parse_answer` state machine
+above returns `VALID` over answers it never actually inspected, most
+sharply for report-type input (Task 11's primary consumer): a report's
+依据索引 table lists every cited id by construction, so an unbounded
+continuation-scanning bug let that table silently satisfy both the
+citation_fit rule and the rival_resolution rule on every report. Nine
+fixes landed together (three Critical, five Important, one Minor folded
+into Critical #1's rewrite because the fix touched the same lines):
+
+1. **Continuation never terminates** — a blank line now resets the
+   `current` field-context, and citation_fit/rival_resolution
+   continuation lines must be indented *and* start with the card id
+   (`^\s+([A-Z]{3,4}-\d{4})`), not merely mention one anywhere later in
+   the document.
+2. **Field keys were case- and indentation-sensitive** — `Pattern_call:`
+   (capitalised) and `  pattern_call:` (indented) used to fail to match
+   at all, silently skipping the formal_pattern tier gate. Field keys are
+   now matched case-insensitively after optional leading whitespace.
+   (This item's original fix also rejected any field-shaped line whose
+   key wasn't in a closed vocabulary as an error — that broke every real
+   master output and was itself corrected in round 2 below; the fix that
+   stands is the case/indentation normalisation only.)
+3. **`no_classical_basis` matched as a substring** — `citations:
+   DTS-9999, no_classical_basis` (or the spec's own hint-comment example,
+   `# 或 no_classical_basis`, left on the line by mistake) used to
+   disable rules 1/3/5 wholesale. `no_classical_basis` now must be the
+   *entire* stripped value; the token appearing alongside real ids is
+   itself now a reported error.
+4. **`sys.stdin.read()` was unguarded** — the same treatment as
+   `load_cards()`/`path.read_text()` above; see the `run_answer_mode`
+   rationale note.
+5. **`\b` does not fire between CJK and ASCII** — `re.findall(r"\b...\b",
+   "依DTS-0001定")` returns nothing, since Python's `re` treats CJK as
+   `\w`. `CARD_ID` now uses lookaround
+   (`(?<![A-Za-z0-9])...(?![A-Za-z0-9-])`) instead of `\b`, so ids in
+   unspaced Chinese prose are still found.
+6. **依据索引 anchor matched anywhere in a line** — a table-of-contents
+   entry or a closing sentence mentioning the heading text used to
+   collapse or displace the report body/index window. `INDEX_HEADING`
+   now only matches a heading-shaped line
+   (`^\s*(?:#{1,6}\s*)?依据索引\s*$`), and the *last* such line wins
+   over an earlier one (e.g. a template block quoted for illustration).
+7. **Repeated `citations:` key silently overwrote** — a two-block
+   aggregated document (e.g. Task 10's referee combining several school
+   outputs) whose first block cited a nonexistent id used to return
+   `VALID`, since only the last block's value was ever read. A duplicate
+   `citations:` key is now a reported error.
+8. **`--cards ""` crashed instead of exiting 2** — see the `main()`
+   rationale note above.
+9. **Inline `citation_fit: DTS-0001 — 理由` was not counted** — the
+   natural single-line form; fixed as part of #1's rewrite of the
+   continuation logic.
+
+All nine are covered by dedicated tests in `tests/test_checks_answer.py`
+(`ContinuationTerminationTest`, `FieldRecognitionTest`,
+`NoClassicalBasisTest`, `UnspacedCjkCardIdTest`, `ReportWindowAnchorTest`,
+`DuplicateCitationsFieldTest`, `InlineCitationFitTest`) and
+`tests/test_cli_cards.py` (`test_unreadable_stdin_exits_two`,
+`test_empty_cards_value_exits_two`) — 12 + 2 = 14 new tests, each
+independently confirmed to fail against the pre-fix code before the fix
+landed.
+
+#### Round 2 correction (2026-08-25): item #2's fix instruction was wrong
+
+Item #2's `KNOWN_FIELDS` closed vocabulary (`school`, `citations`,
+`citation_fit`, `pattern_call`, `rival_resolution`) rejected any other
+field-shaped line as `无法识别的字段`. Running a realistic
+`ziping-pattern-master` output through the CLI — every field the current
+`references/school-prompts/*.md` Output Shape blocks already require
+(`scope`, `core_thesis`, `supporting_evidence`, `counter_evidence`,
+`warnings`, `confidence`, `recommended_wording`, plus the five known
+ones) — returned `INVALID` with seven `无法识别的字段` errors. As shipped,
+mode B rejected every real master output; this was a defect in the
+review's own fix instruction, not in how Task 6 executed it.
+
+The actual defect item #2 was chasing is narrower than a vocabulary: a
+*known* field written with the wrong case or with leading indentation
+was silently dropped, so its rule never ran. Lowercasing the matched key
+after `lstrip()` fixes exactly that and needs no vocabulary — `Pattern_call:`
+normalises to `pattern_call` and rule 4 runs; `Confidence:` normalises to
+`confidence`, gets stored, and is ignored harmlessly, exactly as an
+unindented lowercase field the module doesn't otherwise care about
+always was. `KNOWN_FIELDS`, the `unknown_fields` tracking, and the
+`无法识别的字段` error were deleted entirely.
+
+Accepted residual risk, deliberately not solved: a genuinely misspelled
+`pattern_cal:` is still stored under the wrong key and rule 4 silently
+does not run for it. No closed vocabulary can distinguish a typo from a
+legitimately new field without also breaking every new field, and
+breaking all valid input is far worse than missing a typo — the same
+"a check that silently misses cases is worse than no check" reasoning
+that keeps 孤证不立 out of this module (see the module docstring). A
+fuzzy-match/edit-distance heuristic was considered and rejected for the
+same reason.
+
+Added `RealisticMasterOutputShapeTest` (the full example above, asserting
+`check_answer` returns `[]` — the test whose absence let this ship),
+`FieldRecognitionTest::test_unrelated_field_is_stored_and_ignored_not_reported_as_an_error`,
+and `ContinuationLineIsNotAFieldTest` (an indented citation_fit
+continuation line, including one whose reason text itself contains a
+colon, must not be parsed as a field — verified explicitly since the
+interaction between round 1's continuation-termination fix and round 2's
+key-normalisation fix is exactly the kind of thing worth checking rather
+than reasoning about). Removed
+`FieldRecognitionTest::test_unrecognised_field_key_is_reported`, which
+asserted the now-deleted behaviour. Net: −1 test, +3 tests = +2 over the
+70 above.
+
+#### Round 3 correction (2026-08-25): two properties introduced by the round-1/2 fixes themselves went unhardened
+
+A re-review of rounds 1+2 confirmed all nine original findings and the
+round-2 correction hold, and surfaced two new issues in the fixes
+themselves:
+
+1. **`INDEX_HEADING` too strict, reopening the false-VALID path (Important).**
+   The round-1 fix required the heading line to end immediately after
+   `依据索引`. But the brief's own canonical marker line
+   (`task-6-brief.md:24`) is
+   `依据索引                                # 报告型输入的判别标记` — a
+   trailing comment explaining the marker. An input written exactly as
+   the brief's documentation shows was not detected as a report at all,
+   silently skipping rule 6 entirely — the same false-VALID class
+   Important #6 existed to close, reopened through a formatting path.
+   Worth noting: Critical #3's fix already treated "the user pastes the
+   template's `# 或 no_classical_basis` comment verbatim" as a realistic
+   input and tested for it; the identical risk on the heading marker was
+   left unhardened. Fixed by allowing an optional trailing comment:
+   `INDEX_HEADING = re.compile(r"^\s*(?:#{1,6}\s*)?依据索引\s*(?:#.*)?$")`.
+   Verified all of: bare `依据索引` matches; `## 依据索引` matches; the
+   brief's exact trailing-comment line now matches; a prose
+   cross-reference (`完整出处详见依据索引。`) still does not match; a TOC
+   entry (`1. 依据索引`) still does not match; last-match-wins still
+   holds with two headings present.
+2. **`NO_BASIS_TOKEN` still used `\b` (Minor, folded in deliberately).**
+   `\b` is the exact construct Important #5 established as unreliable at
+   a CJK/ASCII boundary in this codebase; `NO_BASIS_TOKEN.search("无引用no_classical_basis")`
+   returned no match. Impact is small — only the supplementary 二选一
+   diagnostic is lost, the cited ids are still validated normally either
+   way — but the file carried both idioms two lines apart, inviting the
+   same bug back the next time someone copies the nearby pattern. Fixed
+   with the same lookaround shape as `CARD_ID`:
+   `NO_BASIS_TOKEN = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(NO_BASIS)}(?![A-Za-z0-9_])")`.
+
+Added `ReportWindowAnchorTest::test_trailing_comment_after_heading_marker_is_detected`
+and `NoClassicalBasisTest::test_no_classical_basis_glued_to_cjk_text_is_still_detected_as_mixed`,
+both confirmed to fail against the round-2 code before their fixes
+landed. Net: +2 tests over the 72 above.
+
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，56 tests（42 基线 + 13 个 `test_checks_answer.py` + 1 个
-`CliAnswerTest::test_unreadable_answer_file_exits_two`，覆盖 `run_answer_mode`
-对答案文件的读取防护）
+Expected: PASS，74 tests（42 基线 + 13 个 Step 1 的 `test_checks_answer.py`
++ 1 个 `CliAnswerTest::test_unreadable_answer_file_exits_two` + 12 个
+round 1 post-review 新增的 `test_checks_answer.py` 用例 + 2 个 round 1
+post-review 新增的 `test_cli_cards.py` 用例 − 1 个 round 2 移除的用例 + 3 个
+round 2 新增的用例 + 2 个 round 3 新增的用例）
 
 端到端手工验证：
 
