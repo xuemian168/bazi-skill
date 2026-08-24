@@ -12,8 +12,8 @@ it would cause spurious verification failures. See plan deviation A.
 from __future__ import annotations
 
 PUNCTUATION = frozenset(
-    "。，、；：？！「」『』《》〈〉（）()·—…""''"
-    ",.;:?!\"'-[]{}<>"
+    "。，、；：？！「」『』《》〈〉（）()·—…“”‘’"
+    ",.;:?!\"\'-[]{}<>"
 )
 
 

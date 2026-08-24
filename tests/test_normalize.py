@@ -5,7 +5,7 @@ from classics.normalize import normalize
 
 class NormalizeTest(unittest.TestCase):
     def test_strips_all_whitespace_including_fullwidth(self):
-        self.assertEqual(normalize("能知 衰旺　之真机\t"), "能知衰旺之真机")
+        self.assertEqual(normalize("能知 衰旺　之真机	"), "能知衰旺之真机")
 
     def test_strips_spec_punctuation(self):
         self.assertEqual(
@@ -24,6 +24,13 @@ class NormalizeTest(unittest.TestCase):
 
     def test_empty_input(self):
         self.assertEqual(normalize(""), "")
+
+    def test_strips_curly_quotes(self):
+        # Regression test for Unicode curly quotes (U+201C, U+201D, U+2018, U+2019)
+        # These are common in PDF-extracted text and Chinese typesetting
+        self.assertEqual(normalize("“能知衰旺”之真机"), "能知衰旺之真机")
+        self.assertEqual(normalize("“其于三命”之奥"), "其于三命之奥")
+        self.assertEqual(normalize("‘十干’与‘十支’"), "十干与十支")
 
 
 if __name__ == "__main__":
