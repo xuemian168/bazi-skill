@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import tempfile
@@ -46,6 +47,18 @@ class CliCardsTest(unittest.TestCase):
             result = run_cli("--cards", str(classics_root))
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
 
+    def test_empty_cards_value_exits_two(self):
+        # `--cards ""` must dispatch to cards mode (args.cards is not None)
+        # rather than falling through to answer mode with args.answer=None.
+        # --classics-root is set to a real directory so run_answer_mode
+        # would actually reach `Path(args.answer)` (= Path(None)) instead
+        # of bailing out earlier on a missing classics root — otherwise
+        # this test would pass for the wrong reason on the old dispatch
+        # bug too, since this repo has no references/classics/cards yet.
+        result = run_cli("--cards", "", "--classics-root", str(FIXTURES))
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
 
 class CliAnswerTest(unittest.TestCase):
     def test_unreadable_answer_file_exits_two(self):
@@ -56,6 +69,35 @@ class CliAnswerTest(unittest.TestCase):
                 "--answer", str(answer_path), "--classics-root", str(FIXTURES)
             )
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_unreadable_stdin_exits_two(self):
+        # Force a UTF-8 locale: under an unset/POSIX locale, Python decodes
+        # stdin with surrogateescape and invalid bytes pass through silently
+        # (no exception at all), which would make this test pass whether or
+        # not the guard exists. A real UTF-8 locale makes stdin decoding
+        # strict, so the bad bytes below actually raise.
+        env = dict(os.environ)
+        env["LANG"] = "en_US.UTF-8"
+        env["LC_ALL"] = "en_US.UTF-8"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(CLI),
+                "--answer",
+                "-",
+                "--classics-root",
+                str(FIXTURES),
+            ],
+            input=b"citations: DTS-0001\n\xff\xfe not valid utf-8\n",
+            capture_output=True,
+            cwd=str(REPO),
+            env=env,
+        )
+        self.assertEqual(
+            result.returncode,
+            2,
+            result.stdout.decode(errors="replace") + result.stderr.decode(errors="replace"),
+        )
 
 
 if __name__ == "__main__":
