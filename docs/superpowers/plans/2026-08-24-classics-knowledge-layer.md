@@ -944,7 +944,10 @@ def _check_quotes(cards: list[Card], classics_root: Path, errors: list[str]) -> 
                 f"L{card.corpus.start}-L{card.corpus.end}（{rel} 共 {len(lines)} 行）"
             )
             continue
-        if normalize(card.quote) not in normalize(chunk):
+        needle = normalize(card.quote)
+        if not needle:
+            errors.append(f"{where}: 原文正规化后为空，无法校验")
+        elif needle not in normalize(chunk):
             errors.append(
                 f"{where}: 原文未出现在 {rel}#L{card.corpus.start}-L{card.corpus.end}"
             )

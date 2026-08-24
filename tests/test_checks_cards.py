@@ -9,6 +9,19 @@ from classics.corpus import sha256_of
 QUOTE = "能知衰旺之真机，其于三命之奥，思过半矣。"
 CORPUS_BODY = "滴天髓\n通神论·衰旺\n能知衰旺之真机其于三命之奥思过半矣\n"
 
+# A second corpus, dedicated to pinning range verification: the RANGE_QUOTE
+# text appears only on line 5, not line 3, so a card citing the wrong range
+# can only be caught if `_check_quotes` actually searches the cited slice
+# rather than the whole file.
+RANGE_QUOTE = "范围验证专用原文片段"
+RANGE_CORPUS_BODY = (
+    "标题\n"
+    "分节标题\n"
+    "第三行内容与原文无关\n"
+    "第四行内容与原文无关\n"
+    "范围验证专用原文片段\n"
+)
+
 
 def make_card(**overrides) -> Card:
     base = dict(
@@ -36,8 +49,11 @@ class CheckCardsTest(unittest.TestCase):
         (self.root / "corpus").mkdir()
         corpus_file = self.root / "corpus" / "ditiansui.txt"
         corpus_file.write_text(CORPUS_BODY, encoding="utf-8")
+        range_corpus_file = self.root / "corpus" / "fanli.txt"
+        range_corpus_file.write_text(RANGE_CORPUS_BODY, encoding="utf-8")
         (self.root / "corpus" / "PROVENANCE.md").write_text(
-            f"## corpus/ditiansui.txt\n- sha256: {sha256_of(corpus_file)}\n",
+            f"## corpus/ditiansui.txt\n- sha256: {sha256_of(corpus_file)}\n"
+            f"## corpus/fanli.txt\n- sha256: {sha256_of(range_corpus_file)}\n",
             encoding="utf-8",
         )
 
@@ -70,6 +86,34 @@ class CheckCardsTest(unittest.TestCase):
     def test_quote_absent_from_corpus_is_reported(self):
         errors = check_cards([make_card(quote="此句原文不存在于语料")], self.root)
         self.assertTrue(any("原文" in e for e in errors), errors)
+
+    def test_quote_normalizing_to_empty_is_reported(self):
+        errors = check_cards([make_card(quote="……")], self.root)
+        self.assertTrue(any("原文正规化后为空" in e for e in errors), errors)
+
+    def test_quote_present_outside_cited_range_is_reported(self):
+        errors = check_cards(
+            [
+                make_card(
+                    quote=RANGE_QUOTE,
+                    corpus=CorpusRef("corpus/fanli.txt", 3, 3),
+                )
+            ],
+            self.root,
+        )
+        self.assertTrue(any("原文" in e for e in errors), errors)
+
+    def test_quote_present_within_cited_range_passes(self):
+        errors = check_cards(
+            [
+                make_card(
+                    quote=RANGE_QUOTE,
+                    corpus=CorpusRef("corpus/fanli.txt", 5, 5),
+                )
+            ],
+            self.root,
+        )
+        self.assertEqual(errors, [])
 
     def test_corpus_line_out_of_range_is_reported(self):
         errors = check_cards(
