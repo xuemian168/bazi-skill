@@ -27,7 +27,12 @@ def run_cards_mode(classics_root: Path, show_count: bool) -> int:
         print(f"缺少卡片目录: {cards_dir}", file=sys.stderr)
         return 2
 
-    cards, parse_errors = load_cards(cards_dir)
+    try:
+        cards, parse_errors = load_cards(cards_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"无法读取卡片文件: {exc}", file=sys.stderr)
+        return 2
+
     if show_count:
         print(f"cards: {len(cards)}")
     return report(parse_errors + check_cards(cards, classics_root))

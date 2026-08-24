@@ -1193,6 +1193,7 @@ Phase 2 真实语料入库后须重新核对这 5 张卡片的原文与出处。
 ```python
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -1219,7 +1220,7 @@ class CliCardsTest(unittest.TestCase):
     def test_fixture_library_has_five_cards(self):
         result = run_cli("--cards", str(FIXTURES), "--count")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("5", result.stdout)
+        self.assertIn("cards: 5", result.stdout)
 
     def test_missing_cards_dir_exits_two(self):
         result = run_cli("--cards", str(REPO / "docs"))
@@ -1228,6 +1229,15 @@ class CliCardsTest(unittest.TestCase):
     def test_requires_a_mode(self):
         result = run_cli()
         self.assertNotEqual(result.returncode, 0)
+
+    def test_unreadable_card_file_exits_two(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            cards_dir = classics_root / "cards"
+            cards_dir.mkdir()
+            (cards_dir / "bad.md").write_bytes(b"### DTS-0001\n- \xff\xfe not valid utf-8\n")
+            result = run_cli("--cards", str(classics_root))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":
@@ -1295,7 +1305,12 @@ def run_cards_mode(classics_root: Path, show_count: bool) -> int:
         print(f"缺少卡片目录: {cards_dir}", file=sys.stderr)
         return 2
 
-    cards, parse_errors = load_cards(cards_dir)
+    try:
+        cards, parse_errors = load_cards(cards_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"无法读取卡片文件: {exc}", file=sys.stderr)
+        return 2
+
     if show_count:
         print(f"cards: {len(cards)}")
     return report(parse_errors + check_cards(cards, classics_root))
@@ -1323,7 +1338,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，37 tests
+Expected: PASS，42 tests
 
 再手工验证负例（破坏一字必须被检出）：
 

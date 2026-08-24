@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -26,7 +27,7 @@ class CliCardsTest(unittest.TestCase):
     def test_fixture_library_has_five_cards(self):
         result = run_cli("--cards", str(FIXTURES), "--count")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("5", result.stdout)
+        self.assertIn("cards: 5", result.stdout)
 
     def test_missing_cards_dir_exits_two(self):
         result = run_cli("--cards", str(REPO / "docs"))
@@ -35,6 +36,15 @@ class CliCardsTest(unittest.TestCase):
     def test_requires_a_mode(self):
         result = run_cli()
         self.assertNotEqual(result.returncode, 0)
+
+    def test_unreadable_card_file_exits_two(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            cards_dir = classics_root / "cards"
+            cards_dir.mkdir()
+            (cards_dir / "bad.md").write_bytes(b"### DTS-0001\n- \xff\xfe not valid utf-8\n")
+            result = run_cli("--cards", str(classics_root))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":
