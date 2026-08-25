@@ -78,6 +78,21 @@ class SearchCliTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("DTS-0001", result.stdout)
 
+    def test_card_search_always_prints_boundary(self):
+        # Review finding (Important #1): DTS-0001's own 反例边界 excludes
+        # 从格/化格 -- "从格、化格不适用此条，日主已不以自身强弱论". Its
+        # `boundary` text is folded into the ranked haystack (so this
+        # query finds the card at all), but until this fix only `plain`
+        # was printed, so a query naming the very situation the card
+        # excludes returned the card's affirmative paraphrase with no
+        # exclusion visible. The exclusion clause must always be printed
+        # alongside a card hit, not only when it happens to be why the
+        # card matched.
+        result = self._run("从格", "--classics-root", str(FIXTURES))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("DTS-0001", result.stdout)
+        self.assertIn("从格、化格不适用此条", result.stdout)
+
     def test_corpus_search_prints_location(self):
         result = self._run("余寒犹存", "--classics-root", str(FIXTURES), "--corpus")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -87,6 +102,54 @@ class SearchCliTest(unittest.TestCase):
     def test_no_hit_exits_one(self):
         result = self._run("紫微斗数飞星", "--classics-root", str(FIXTURES))
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_missing_corpus_dir_exits_two(self):
+        # Review finding (Important #2): with --corpus, a missing corpus/
+        # directory must be a setup failure (exit 2), not silently
+        # indistinguishable from a genuine zero-match search (exit 1) --
+        # the same ambiguity the cards_dir.is_dir() check already guards
+        # against on the cards path.
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            (classics_root / "cards").mkdir()
+            result = self._run(
+                "衰旺", "--classics-root", str(classics_root), "--corpus"
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_negative_limit_rejected(self):
+        # Review finding (Important #3): `hits[:limit]` with limit=-1 uses
+        # Python's list[:-1] semantics and silently drops the lowest-ranked
+        # hit instead of rejecting the argument, exiting 0 as if the
+        # result set were complete.
+        result = self._run(
+            "月令", "--classics-root", str(FIXTURES), "--limit", "-1"
+        )
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_zero_limit_rejected(self):
+        # Review finding (Important #3): --limit 0 must be rejected, not
+        # reported as "no hits" (exit 1), which would conflate "caller
+        # asked for zero results" with "nothing matched".
+        result = self._run(
+            "月令", "--classics-root", str(FIXTURES), "--limit", "0"
+        )
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_unreadable_corpus_file_exits_two(self):
+        # Minor finding: the corpus-path read guard added alongside the
+        # cards-path guard had no covering test. Symmetric to
+        # test_unreadable_card_file_exits_two below, but for --corpus.
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            corpus_dir = classics_root / "corpus"
+            corpus_dir.mkdir()
+            (corpus_dir / "bad.txt").write_bytes(b"\xff\xfe not valid utf-8\n")
+            result = self._run(
+                "衰旺", "--classics-root", str(classics_root), "--corpus"
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
 
     def test_unreadable_card_file_exits_two(self):
         # Guard requirement (not in the brief): search_classics.py calls
