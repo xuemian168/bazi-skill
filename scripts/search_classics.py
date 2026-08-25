@@ -27,9 +27,17 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=10, help="Max hits (default: 10)")
     args = parser.parse_args()
 
+    if args.limit < 1:
+        parser.error("--limit must be >= 1")
+
     root = Path(args.classics_root)
 
     if args.corpus:
+        corpus_dir = root / "corpus"
+        if not corpus_dir.is_dir():
+            print(f"缺少语料目录: {corpus_dir}", file=sys.stderr)
+            return 2
+
         try:
             hits = search_corpus(root, args.query, limit=args.limit)
         except Exception as exc:  # noqa: BLE001
@@ -68,6 +76,7 @@ def main() -> int:
     for value, card in hits:
         print(f"{value:.4f}  {card.id}  [{card.tier}]  {card.classic}")
         print(f"          {card.plain}")
+        print(f"          反例边界: {card.boundary}")
     return 0
 
 

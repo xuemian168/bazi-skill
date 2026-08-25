@@ -2307,6 +2307,7 @@ git commit -m "feat(classics): add mode B answer citation checks"
 ```python
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -2384,6 +2385,18 @@ class SearchCliTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("DTS-0001", result.stdout)
 
+    def test_card_search_always_prints_boundary(self):
+        # DTS-0001's own 反例边界 excludes 从格/化格 -- "从格、化格不适用
+        # 此条，日主已不以自身强弱论". `boundary` is folded into the ranked
+        # haystack (so this query finds the card at all), but printing only
+        # `plain` would return the card's affirmative paraphrase with no
+        # exclusion visible for a query naming the very situation the card
+        # excludes. The exclusion clause must always print alongside a hit.
+        result = self._run("从格", "--classics-root", str(FIXTURES))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("DTS-0001", result.stdout)
+        self.assertIn("从格、化格不适用此条", result.stdout)
+
     def test_corpus_search_prints_location(self):
         result = self._run("余寒犹存", "--classics-root", str(FIXTURES), "--corpus")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -2393,6 +2406,67 @@ class SearchCliTest(unittest.TestCase):
     def test_no_hit_exits_one(self):
         result = self._run("紫微斗数飞星", "--classics-root", str(FIXTURES))
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_missing_corpus_dir_exits_two(self):
+        # With --corpus, a missing corpus/ directory must be a setup
+        # failure (exit 2), not silently indistinguishable from a genuine
+        # zero-match search (exit 1) -- the same ambiguity the
+        # cards_dir.is_dir() check already guards against on the cards path.
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            (classics_root / "cards").mkdir()
+            result = self._run(
+                "衰旺", "--classics-root", str(classics_root), "--corpus"
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_negative_limit_rejected(self):
+        # `hits[:limit]` with limit=-1 uses Python's list[:-1] semantics and
+        # silently drops the lowest-ranked hit instead of rejecting the
+        # argument, exiting 0 as if the result set were complete.
+        result = self._run(
+            "月令", "--classics-root", str(FIXTURES), "--limit", "-1"
+        )
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_zero_limit_rejected(self):
+        # --limit 0 must be rejected, not reported as "no hits" (exit 1),
+        # which would conflate "caller asked for zero results" with
+        # "nothing matched".
+        result = self._run(
+            "月令", "--classics-root", str(FIXTURES), "--limit", "0"
+        )
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_unreadable_corpus_file_exits_two(self):
+        # Symmetric to test_unreadable_card_file_exits_two below, but for
+        # --corpus: the corpus-path read guard needs its own coverage.
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            corpus_dir = classics_root / "corpus"
+            corpus_dir.mkdir()
+            (corpus_dir / "bad.txt").write_bytes(b"\xff\xfe not valid utf-8\n")
+            result = self._run(
+                "衰旺", "--classics-root", str(classics_root), "--corpus"
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
+
+    def test_unreadable_card_file_exits_two(self):
+        # search_classics.py calls load_cards(), which does a plain
+        # path.read_text(encoding="utf-8") per card file. An invalid-UTF-8
+        # card file must not surface as an unguarded traceback (Python's
+        # default exit 1, indistinguishable from a legitimate "no hits"
+        # run) -- it must exit 2 like validate_citations.py's equivalent
+        # guard.
+        with tempfile.TemporaryDirectory() as tmp:
+            classics_root = Path(tmp)
+            cards_dir = classics_root / "cards"
+            cards_dir.mkdir()
+            (cards_dir / "bad.md").write_bytes(b"### DTS-0001\n- \xff\xfe not valid utf-8\n")
+            result = self._run("衰旺", "--classics-root", str(classics_root))
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
 
 
 if __name__ == "__main__":
@@ -2532,10 +2606,22 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=10, help="Max hits (default: 10)")
     args = parser.parse_args()
 
+    if args.limit < 1:
+        parser.error("--limit must be >= 1")
+
     root = Path(args.classics_root)
 
     if args.corpus:
-        hits = search_corpus(root, args.query, limit=args.limit)
+        corpus_dir = root / "corpus"
+        if not corpus_dir.is_dir():
+            print(f"缺少语料目录: {corpus_dir}", file=sys.stderr)
+            return 2
+
+        try:
+            hits = search_corpus(root, args.query, limit=args.limit)
+        except Exception as exc:  # noqa: BLE001
+            print(f"无法读取语料文件: {exc}", file=sys.stderr)
+            return 2
         if not hits:
             print("no hits")
             return 1
@@ -2548,7 +2634,12 @@ def main() -> int:
         print(f"缺少卡片目录: {cards_dir}", file=sys.stderr)
         return 2
 
-    cards, errors = load_cards(cards_dir)
+    try:
+        cards, errors = load_cards(cards_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"无法读取卡片文件: {exc}", file=sys.stderr)
+        return 2
+
     if errors:
         print("卡片库无效，先运行 validate_citations.py --cards", file=sys.stderr)
         for error in errors:
@@ -2564,6 +2655,7 @@ def main() -> int:
     for value, card in hits:
         print(f"{value:.4f}  {card.id}  [{card.tier}]  {card.classic}")
         print(f"          {card.plain}")
+        print(f"          反例边界: {card.boundary}")
     return 0
 
 
@@ -2571,10 +2663,18 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
+Guard rationale (established pattern, see `scripts/validate_citations.py`): both
+`load_cards()` and `search_corpus()` (via `read_lines()` per corpus file) do
+plain `path.read_text(encoding="utf-8")` reads. An unguarded
+`UnicodeDecodeError` would otherwise surface as a traceback and Python's
+default exit 1 — indistinguishable from a legitimate "no hits" result — so
+both call sites are wrapped and return 2 on failure, same as the cards-path
+guard.
+
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，64 tests
+Expected: PASS，94 tests（74 基线 + 20 个 `test_search.py`）
 
 - [ ] **Step 5: 提交**
 
