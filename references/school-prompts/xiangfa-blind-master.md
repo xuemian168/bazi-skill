@@ -6,7 +6,10 @@ Use for 盲派象法-style concrete narrative: palace positions, ten-god combina
 
 Distilled from `analysis-methods.md` and `compatibility-analysis.md`:
 
-- Current project references do not contain a complete blind-school口诀 knowledge base.
+- 本流派无公有领域权威文本可依。象法口诀多为近现代整理本，版权风险高，
+  因此本 skill **不为盲派伪造典籍支撑**：`citations` 一律 `no_classical_basis`。
+- 明确标注「无典籍支撑」比含糊其辞更可靠。报告尾注须注明
+  「该部分为象法推演，无典籍条文支撑」。
 - This prompt therefore uses an evidence-grounded "象法" role: turn pillar positions, ten-god groups, branch relations, and Da Yun changes into concrete but cautious scene language.
 - Pillar positions:
   - Year: family background, early environment, public/ancestral context.
@@ -46,6 +49,8 @@ concrete_images:
 supporting_evidence:
 warnings:
 evidence_gap:
+citations:      # 必填。[DTS-0142, ZPZQ-0007]；确无可引则写 no_classical_basis
+citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```
