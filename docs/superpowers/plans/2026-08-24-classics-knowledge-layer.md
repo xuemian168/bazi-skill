@@ -2838,6 +2838,11 @@ master 报 `evidence_gap` 需深挖时，经 `scripts/search_classics.py` 定位
 `ZWDS` 紫微斗数全书、`XJFF` 协纪辨方书。
 启用条件：其语料已入库并在 `corpus/PROVENANCE.md` 登记。
 
+`PROVENANCE.md` 登记不只是二期前缀的启用门槛：`validate_citations.py --cards`
+对**任何**被卡片引用的语料文件都会核对其在 `PROVENANCE.md` 中的登记与
+sha256，未登记即报错，与该前缀本期是否已启用无关（见 `checks_cards.py` 的
+`_check_provenance`）。
+
 ## 层级与权重
 
 | 层级 | 含义 | 裁判用法 |
@@ -2859,13 +2864,23 @@ master 报 `evidence_gap` 需深挖时，经 `scripts/search_classics.py` 定位
 - 层级: 核心论断 | 操作规则 | 例证 | 存疑
 - 流派: 逗号分隔，取值见「流派 → 主题」表
 - 竞合:
-  - <对立卡片ID> — 差异说明（必须双向，对方也要回指本卡）
+  - <对立卡片ID> — 差异说明（必须双向，对方也要回指本卡）（无对立卡片时可省略此字段）
 - 反例边界: 该条不适用的情形。必填
-- corpus: corpus/<file>#L<起>-L<止>
+- corpus: corpus/<file>#L<行号>（或范围 corpus/<file>#L<起>-L<止>）
 ```
+
+裁判据「适用前提」与「反例边界」共同判定引用是否成立：前提不满足，或本盘
+情形落入反例边界，两者任一发生即不得采信该条。`checks_answer.py` 目前不
+核对 `反例边界`，这条纪律**只靠卡片作者据实撰写与裁判依文档执行**；
+`search_classics.py` 的检索结果会打印每张命中卡片的反例边界，是唯一的
+机械提示。
 
 `反例边界` 必填是刻意的：命理误判绝大多数来自把有条件的规则当无条件用。
 确实找不到边界时，写「未见明确边界，按存疑级处理」并把 `层级` 降为 `存疑`。
+
+`原文` 须与语料文件所用字形（繁/简）完全一致：`normalize()` 只去除空白与
+标点，不做繁简转换。语料若源自维基文库、ctext.org 等常见繁体来源，卡片
+原文也要用繁体抄录，否则校验只会报「原文未出现在 ...」，看不出真正原因。
 
 ## 常用命令
 
@@ -2905,7 +2920,8 @@ mkdir -p references/classics/corpus && touch references/classics/corpus/.gitkeep
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，72 tests
+Expected: PASS。72 是本任务撰写时的估算，非固定值——实际以运行时的当前总数
+为准（Task 8 落地时，94 个既有测试加 8 个新测试，共 102 个）。
 
 再确认空卡片库对 CLI 是有效状态：
 
