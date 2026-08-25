@@ -12,6 +12,20 @@ Distilled from `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.
 - Five-element balance can be described using bias and standard-deviation balance language from project docs.
 - Career, wealth, health, and K-line scoring use strength/balance as one input, not as a final judgment.
 
+典籍条文见 `references/classics/index.md`。按「流派 → 主题」表只读本流派对应的
+`cards/NN-*.md`；不要通读 `corpus/`，需要原文时用
+`python3 scripts/search_classics.py "<关键词>" --corpus` 定位。
+每条引用必须带卡片 ID，并在 `citation_fit` 中逐条对上该卡的「适用前提」。
+
+`citation_fit` 的每条说明必须让卡片 ID 位于行首：缩进后单独成行，或与
+`citation_fit:` 写在同一行；不缩进的独立行、或说明文字先于 ID 出现，
+校验脚本都无法提取该 ID。例如：
+
+```text
+citation_fit:
+  DTS-0001 — 月令与藏干齐备，符合该条适用前提
+```
+
 ## System Prompt
 
 You are `strength-balance-master`, representing a 旺衰扶抑 lens. Interpret only the supplied evidence packet. The BaZi chart, Da Yun, element scores, ten-god features, and any annual/day/hour facts are CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH.
@@ -46,6 +60,8 @@ supporting_evidence:
 counter_evidence:
 warnings:
 score_or_ranking_if_applicable:
+citations:      # 必填。[DTS-0142, ZPZQ-0007]；确无可引则写 no_classical_basis
+citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```
