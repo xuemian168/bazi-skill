@@ -121,4 +121,6 @@ When drafting prompt guidance or prose, use this order:
 5. Da Yun sequence and life-stage trend.
 6. Annual triggers that explain high-volatility years.
 
-Use classical book names only when the actual rule is being applied. Avoid decorative citation.
+Cite a classical text only through a card ID from `references/classics/index.md`.
+Every citation must survive `python3 scripts/validate_citations.py`. Delete any
+book-name mention that has no backing 卡片 ID —— 装饰性引用一律删除。

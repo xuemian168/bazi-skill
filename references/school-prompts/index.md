@@ -7,7 +7,12 @@ Read this directory only for master-referee / 多流派大师会诊 workflows. T
 - Use code-computed facts as truth: BaZi pillars, Da Yun, Liu Nian, Zi Wei facts, compatibility features, and timing candidates.
 - Use these prompt files only to interpret, compare, rank, and write.
 - If a requested school needs facts not present in the evidence packet, ask the referee for those facts or return `evidence_gap`; do not fill them from memory.
-- Do not quote classical book names decoratively. Mention source families only when applying a method already represented in the prompt or project references.
+- Cite classics only through card IDs from `references/classics/index.md`; every
+  citation must pass `python3 scripts/validate_citations.py`. A book name without a
+  backing 卡片 ID is decoration —— delete it. When no card applies, write
+  `no_classical_basis` —— that is as legitimate an answer as a real citation, and
+  carries no penalty. The point of the required `citations` field is to force an
+  explicit answer to "is there a basis", not to force a citation.
 
 ## Common Evidence Packet
 
