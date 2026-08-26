@@ -91,6 +91,8 @@ flowchart TD
     D --> E["Evidence Packet<br/>确认事实 + 用户约束 + 相关参考"]
     B --> R["references/<br/>宿主合约 / 分析方法 / 合盘 / 择时 / 报告"]
     R --> E
+    R --> RC["references/classics/<br/>条文卡片 + 精选原文 + 引用契约"]
+    RC --> E
 
     E --> F["多流派大师层"]
     F --> F1["子平格局"]
@@ -121,6 +123,9 @@ flowchart TD
 - 信息先补齐：出生信息、地点/时区、真太阳时口径、合盘双方资料、择时时间范围等关键输入缺失时，先追问，不直接猜。
 - 多流派会诊：复杂命理任务可用多个主流流派的“大师”分别解读，再由“裁判”综合输出，避免简单拼接或平均分。
 - 结构先验证：`AnalysisResult`、报告 JSON 等结构化结果必须先通过脚本校验，再视为可交付。
+- 引用必须可核对：典籍条文一律通过卡片 ID 引用，原文可机械比对语料原文；
+  确无可引时显式写 `no_classical_basis`。这套机制不追求让预测更准（命理判断不可证伪），
+  而是让输出可追溯、可反驳、边界清楚。
 
 ## 主要能力
 
@@ -138,7 +143,10 @@ flowchart TD
 - `agents/openai.yaml`：界面展示用的名称、简介和默认提示词。
 - `references/`：分主题参考文档，包括项目合约、分析方法、真太阳时、合盘、择时、报告生成、角色分工等。
 - `references/school-prompts/`：多流派大师与裁判的专属提示词和知识切片，要求证据不足时输出 `evidence_gap`，不补空白规则。
+- `references/classics/`：古籍知识层。`index.md` 三向路由、`cards/` 按命理主题分片的条文卡片、
+  `corpus/` 精选原文底库与 `PROVENANCE.md` 溯源清单。
 - `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
+- `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
 
 ## Claude Code 兼容
 

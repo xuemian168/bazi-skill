@@ -19,6 +19,11 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, and K-l
    - Compatibility or synastry analysis, 合盘, 合婚, 伴侣匹配, relationship fit, or partnership matching: read `references/compatibility-analysis.md`, plus `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Auspicious date/hour selection, 吉日吉时, 择日, or 择时: read `references/auspicious-timing.md` and `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Professional report, 命理研报, structured report, Markdown report, or HTML report workflow: read `references/report-generation.md` and `references/project-contracts.md`; if using an `AnalysisResult`, validate the JSON before composing the report.
+   - 古籍条文、典籍引用、条文出处、引用核对，或需要为判断补依据: read
+     `references/classics/index.md`, then only the topic card files your school needs;
+     verify with `scripts/validate_citations.py`; locate raw source text with
+     `scripts/search_classics.py --corpus`. Never read `references/classics/corpus/`
+     end to end.
 
 2. Apply an information-completeness gate before analysis, JSON generation, report rendering, or multi-agent work:
    - If required user information is missing, ask follow-up questions before proceeding. Do not guess birth facts, chart facts, event constraints, relationship counterpart data, or report scope.
@@ -129,6 +134,9 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 - `references/agent-roles.md`: multi-school master + referee workflow, school roster, evidence packet, and synthesis rules.
 - `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the referee and each school master.
 - `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
+- `references/classics/index.md`: 古籍知识层入口，三向路由、卡片契约、层级定义与引用规范。
+- `scripts/validate_citations.py`: 卡片库自检（`--cards`）与答案/报告引用校验（`--answer`）。
+- `scripts/search_classics.py`: 零依赖检索，卡片优先、原文回落。
 
 ## Useful Commands
 
@@ -142,4 +150,23 @@ Validate stdin with an explicit birth year:
 
 ```bash
 cat result.json | python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_analysis_result.py" --birth-year 1990 -
+```
+
+校验卡片库：
+
+```bash
+python3 scripts/validate_citations.py --cards references/classics
+```
+
+校验一份 master 输出或报告的引用使用：
+
+```bash
+python3 scripts/validate_citations.py --answer answer.md --classics-root references/classics
+```
+
+检索条文：
+
+```bash
+python3 scripts/search_classics.py "衰旺真机" --school 旺衰扶抑
+python3 scripts/search_classics.py "余寒犹存" --corpus
 ```
