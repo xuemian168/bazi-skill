@@ -24,8 +24,12 @@ Distilled from `compatibility-analysis.md` and `analysis-methods.md`:
 通用条文对应的卡片时才可改写为具体卡片 ID —— 二者只能二选一，同一次输出中
 不得同时出现 `no_classical_basis` 与卡片 ID。不得声称存在「合盘专书」依据。
 如需定位可引卡片，见 `references/classics/index.md`「流派 → 主题」表中
-十神、运岁对应的 `cards/40-shishen.md`、`cards/70-yunsui.md`，或用
-`python3 scripts/search_classics.py "<关键词>"` 检索。
+十神、运岁对应的 `cards/40-shishen.md`、`cards/70-yunsui.md`，或用以下命令检索
+（当前工作目录通常是宿主项目而非 skill 目录，故用完整安装路径）：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "<关键词>" --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```
 
 ## System Prompt
 
@@ -65,7 +69,7 @@ practical_advice:
 supporting_evidence:
 warnings:
 citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
-citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
+citation_fit:   # 每个被引 ID 一行，缩进两格，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```

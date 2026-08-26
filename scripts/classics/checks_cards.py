@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import CARD_TIERS, ENABLED_PREFIXES, RESERVED_PREFIXES, SCHOOLS
+from . import (
+    CARD_TIERS,
+    ENABLED_PREFIXES,
+    PREFIX_CORPUS,
+    RESERVED_PREFIXES,
+    SCHOOLS,
+)
 from .cards import Card
 from .corpus import parse_provenance, read_lines, sha256_of, slice_lines
 from .normalize import normalize
@@ -43,11 +49,34 @@ def _check_enums(cards: list[Card], errors: list[str]) -> None:
                 errors.append(f"{where}: 流派 `{school}` 不在枚举 {list(SCHOOLS)} 内")
 
 
+def _check_prefix_corpus(cards: list[Card], errors: list[str]) -> None:
+    """A card's ID prefix must match the corpus file it cites.
+
+    `_check_quotes` proves the quote sits at the cited location; it cannot
+    prove the location belongs to the book the ID (and the free-text 典籍
+    field) names. Without this, `DTS-0009` verifying against
+    `corpus/ziping-zhenquan.txt` is a mis-attributed citation that looks
+    fully machine-verified. Unknown and reserved prefixes are left to
+    `_check_identity`, which already rejects them by name.
+    """
+    for card in cards:
+        allowed = PREFIX_CORPUS.get(card.id.split("-", 1)[0])
+        if allowed is None or card.corpus.path in allowed:
+            continue
+        errors.append(
+            f"{card.source_file}:{card.line} {card.id}: 前缀与语料不符，"
+            f"该前缀应引用 {list(allowed)}，实际为 {card.corpus.path}"
+        )
+
+
 def _check_rivals(cards: list[Card], errors: list[str]) -> None:
     by_id = {card.id: card for card in cards}
     for card in cards:
         where = f"{card.source_file}:{card.line} {card.id}"
         for rival in card.rivals:
+            if rival.card_id == card.id:
+                errors.append(f"{where}: 竞合不得指向自身")
+                continue
             target = by_id.get(rival.card_id)
             if target is None:
                 errors.append(f"{where}: 竞合指向不存在的卡片 {rival.card_id}")
@@ -114,6 +143,7 @@ def check_cards(cards: list[Card], classics_root: Path) -> list[str]:
     errors: list[str] = []
     _check_identity(cards, errors)
     _check_enums(cards, errors)
+    _check_prefix_corpus(cards, errors)
     _check_rivals(cards, errors)
     _check_quotes(cards, classics_root, errors)
     _check_provenance(cards, classics_root, errors)

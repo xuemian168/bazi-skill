@@ -56,6 +56,12 @@ master 报 `evidence_gap` 需深挖时，经 `scripts/search_classics.py` 定位
 sha256，未登记即报错，与该前缀本期是否已启用无关（见 `checks_cards.py` 的
 `_check_provenance`）。
 
+**本期 `corpus/` 是空目录，`corpus/PROVENANCE.md` 尚未落地。** 上表的语料文件名
+是卡片编纂时必须使用的目标路径，不是已入库文件；卡片 ID 前缀与语料文件的对应
+关系由 `scripts/classics/__init__.py` 的 `PREFIX_CORPUS` 强制（前缀与语料对不上
+即报错），改动上表须同步改该常量。语料与 `PROVENANCE.md` 随 Spec Phase 2 入库；
+在此之前卡片库为空，`--cards` 报 `cards: 0` / `VALID`。
+
 ## 层级与权重
 
 | 层级 | 含义 | 裁判用法 |
@@ -97,10 +103,11 @@ sha256，未登记即报错，与该前缀本期是否已启用无关（见 `che
 
 ## `citation_fit` 格式
 
-`citation_fit` 每条说明必须让卡片 ID 位于行首，否则 `checks_answer.py`
-无法提取该 ID，会误报「缺少对应的 citation_fit 说明」。两种写法均可：
+`citation_fit` 每条说明**单独成行时必须缩进**，且缩进后第一个字符就是卡片 ID；
+否则 `checks_answer.py` 无法提取该 ID，会误报「缺少对应的 citation_fit 说明」。
+只有下面两种写法可用：
 
-- 缩进后单独成行，ID 在行首：
+- 缩进两格后单独成行，缩进后行首为该 ID：
   ```text
   citation_fit:
     DTS-0001 — 月令与藏干齐备，符合该条适用前提
@@ -115,8 +122,12 @@ sha256，未登记即报错，与该前缀本期是否已启用无关（见 `che
 
 ## 常用命令
 
+当前工作目录通常是宿主项目而非 skill 目录，故脚本与 `references/` 一律用完整
+安装路径 `${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`（与 SKILL.md
+「Useful Commands」一致）：
+
 ```bash
-python3 scripts/validate_citations.py --cards references/classics
-python3 scripts/search_classics.py "衰旺真机" --school 旺衰扶抑
-python3 scripts/search_classics.py "余寒犹存" --corpus
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "衰旺真机" --school 旺衰扶抑 --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "余寒犹存" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```

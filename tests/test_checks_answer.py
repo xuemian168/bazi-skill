@@ -48,7 +48,7 @@ class ParseAnswerTest(unittest.TestCase):
         self.assertFalse(answer["is_report"])
 
     def test_detects_report_input(self):
-        answer = parse_answer("依据索引\n| DTS-0001 | 滴天髓 | 原文 | 理由 |\n")
+        answer = parse_answer("## 依据索引\n| DTS-0001 | 滴天髓 | 原文 | 理由 |\n")
         self.assertTrue(answer["is_report"])
 
     def test_no_classical_basis_yields_empty_citations(self):
@@ -295,11 +295,13 @@ class ReportWindowAnchorTest(unittest.TestCase):
         # round-1/2 heading regex required the line to end immediately
         # after 依据索引, so an input written exactly as the brief's own
         # documentation shows was not detected as a report at all, silently
-        # skipping rule 6 entirely.
+        # skipping rule 6 entirely. Round 4 additionally requires the ATX
+        # marker (see BareIndexLineIsNotAHeadingTest), so the marker line
+        # here carries both the `##` and the trailing comment.
         text = (
             "citations: DTS-0001\n"
             "citation_fit:\n  DTS-0001 — 理由\n"
-            "依据索引                                # 报告型输入的判别标记\n"
+            "## 依据索引                             # 报告型输入的判别标记\n"
             "| DTS-0001 | 滴天髓 | 原文 | 理由 |\n"
         )
         answer = parse_answer(text)
@@ -527,6 +529,188 @@ class ReportFormalPatternTierEvidenceTest(unittest.TestCase):
         )
         errors = check_answer(parse_answer(text), LIBRARY)
         self.assertTrue(any("层级" in e for e in errors), errors)
+
+
+class BareIndexLineIsNotAHeadingTest(unittest.TestCase):
+    """Round 4 / I2: the report relaxation turned a false `is_report` from a
+    safe over-application of rule 6 into a citations bypass — a report no
+    longer needs a `citations:` field. The bare, unmarked line `依据索引`
+    was accepted as the section anchor, and no file under `references/`
+    documents that form; `report-generation.md` documents `## 依据索引`.
+    So any answer containing a lone `依据索引` line — including one that
+    merely reproduces the report template inside a code fence — silently
+    lost the mandatory-citations rule."""
+
+    def test_bare_unmarked_line_does_not_make_an_answer_a_report(self):
+        text = "正文说了一堆结构性判断。\n依据索引\n"
+        answer = parse_answer(text)
+        self.assertFalse(answer["is_report"])
+        errors = check_answer(answer, LIBRARY)
+        self.assertTrue(any("citations" in e and "缺少" in e for e in errors), errors)
+
+    def test_every_atx_level_is_still_accepted(self):
+        for marker in ("#", "##", "###", "####", "#####", "######"):
+            with self.subTest(marker=marker):
+                answer = parse_answer(
+                    f"{marker} 依据索引\n| DTS-0001 | 滴天髓 | 原文 | 理由 |\n"
+                )
+                self.assertTrue(answer["is_report"])
+
+    def test_last_atx_heading_still_wins_over_an_earlier_one(self):
+        # The last-match-wins behaviour is an earlier fix and must survive.
+        text = textwrap.dedent(
+            """\
+            ## 依据索引
+
+            正文提到 ZPZQ-0001，最终依据见下方表格。
+
+            ## 依据索引
+
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(
+            any("依据索引" in e and "ZPZQ-0001" in e for e in errors), errors
+        )
+
+
+class DecoratedPatternCallTest(unittest.TestCase):
+    """Round 4 / I3: the tier gate compared `pattern_call` for exact
+    equality, so annotating the enum value — `formal_pattern（正官格）`, a
+    natural thing for a model to write — silently disabled the only
+    machine-enforced form of spec 8.1's hard rule. `pattern_call` is a
+    closed enum (ziping-pattern-master.md:59), so matching its leading
+    token is safe; the closed-vocabulary objection that applies to field
+    *keys* does not apply to this value."""
+
+    EXAMPLE_TIER_ONLY = (
+        "citations: SMTH-0001\n"
+        "citation_fit:\n  SMTH-0001 — 理由\n"
+        "pattern_call: {}\n"
+    )
+
+    def test_decorated_formal_pattern_still_triggers_the_tier_gate(self):
+        for value in (
+            "formal_pattern（正官格）",
+            "formal_pattern (正官格)",
+            "formal_pattern —— 正官格",
+            "formal_pattern | pattern_tendency | no_stable_pattern",
+            "formal_pattern  # 已确认",
+        ):
+            with self.subTest(value=value):
+                errors = check_answer(
+                    parse_answer(self.EXAMPLE_TIER_ONLY.format(value)), LIBRARY
+                )
+                self.assertTrue(any("层级" in e for e in errors), errors)
+
+    def test_other_enum_values_do_not_trigger_the_tier_gate(self):
+        for value in (
+            "pattern_tendency",
+            "no_stable_pattern",
+            "evidence_gap",
+            "pattern_tendency（近正官）",
+        ):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    check_answer(
+                        parse_answer(self.EXAMPLE_TIER_ONLY.format(value)), LIBRARY
+                    ),
+                    [],
+                )
+
+    def test_a_longer_token_starting_with_the_enum_value_is_not_matched(self):
+        # The leading token must be the whole token, not a prefix: a value
+        # that merely starts with the enum text is a different value.
+        self.assertEqual(
+            check_answer(
+                parse_answer(self.EXAMPLE_TIER_ONLY.format("formal_pattern_v2")),
+                LIBRARY,
+            ),
+            [],
+        )
+
+    def test_strong_tier_support_still_satisfies_a_decorated_value(self):
+        text = (
+            "citations: DTS-0001\n"
+            "citation_fit:\n  DTS-0001 — 理由\n"
+            "pattern_call: formal_pattern（正官格）\n"
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+
+class EmptyReportIndexTest(unittest.TestCase):
+    """Round 4 / I6b: the relaxation's premise is that the 依据索引 table
+    *is* the report layer's citation declaration. A report whose table
+    names no card at all therefore declares nothing, yet used to pass —
+    the same silence that is rejected outright for a master output. This
+    restores the relaxation's own premise without pretending to implement
+    spec 8.3's unimplementable body-claim coverage check (see plan
+    deviation E)."""
+
+    EMPTY_INDEX = textwrap.dedent(
+        """\
+        本造月令为寅，日主得令，格取正官，用神为财。
+
+        ## 依据索引
+
+        | 卡片ID | 典籍出处 | 原文 | 本盘适用理由 |
+        |---|---|---|---|
+        """
+    )
+
+    def test_empty_index_without_any_declaration_is_reported(self):
+        errors = check_answer(parse_answer(self.EMPTY_INDEX), LIBRARY)
+        self.assertTrue(any("依据索引" in e and "未列出" in e for e in errors), errors)
+
+    def test_empty_index_with_a_citations_field_passes(self):
+        text = f"citations: {NO_BASIS}\n\n{self.EMPTY_INDEX}"
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+    def test_empty_index_with_an_explicit_no_basis_statement_passes(self):
+        text = self.EMPTY_INDEX.replace(
+            "本造月令为寅，日主得令，格取正官，用神为财。",
+            "本造月令为寅，日主得令。该部分为象法推演，无典籍条文支撑。",
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+    def test_non_empty_index_needs_no_extra_declaration(self):
+        text = self.EMPTY_INDEX + "| DTS-0001 | 滴天髓 | 原文 | 理由 |\n"
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+
+class NoBasisWithTemplateCommentTest(unittest.TestCase):
+    """Round 4 / M3: every master template ships an inline hint comment on
+    the `citations:` line, and three masters are told to always write
+    `no_classical_basis`. The exact-match test ran against the raw value
+    including that comment, so the shipped template's own output was
+    rejected with `citations 为空` — a message that is untrue of the
+    input. The trailing comment is not part of the value; the equality
+    test itself stays exact."""
+
+    def test_template_comment_after_no_classical_basis_is_accepted(self):
+        text = f"citations: {NO_BASIS}   # 或逗号分隔的卡片 ID\n"
+        answer = parse_answer(text)
+        self.assertTrue(answer["no_classical_basis"])
+        self.assertEqual(check_answer(answer, LIBRARY), [])
+
+    def test_shipped_master_template_comment_is_accepted(self):
+        text = (
+            f"citations: {NO_BASIS}      "
+            f"# 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 {NO_BASIS}\n"
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+    def test_a_value_that_merely_contains_the_token_is_still_rejected(self):
+        # Exactness is unchanged: only a trailing comment is stripped.
+        errors = check_answer(parse_answer(f"citations: 无 {NO_BASIS}\n"), LIBRARY)
+        self.assertTrue(any("为空" in e for e in errors), errors)
+
+    def test_hint_comment_still_does_not_hide_a_real_id(self):
+        errors = check_answer(
+            parse_answer(f"citations: DTS-9999   # 或 {NO_BASIS}\n"), LIBRARY
+        )
+        self.assertTrue(any("DTS-9999" in e for e in errors), errors)
 
 
 if __name__ == "__main__":

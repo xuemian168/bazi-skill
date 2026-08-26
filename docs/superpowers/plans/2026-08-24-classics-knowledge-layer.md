@@ -41,6 +41,7 @@ Spec Phase 2（语料入库）与 Phase 3/4（卡片编纂与回归）各自另�
 | B | Spec §9.1 模式 B 第 3 条 | 「孤证不立」**不做脚本检查**，保留为 §8.2 第 4 条的裁判 prompt 规则 | 「事件级判断」无法从自由文本可靠分类。一个会漏判的假检查比没有检查更危险 —— 它提供虚假的安全感 |
 | C | Spec §9.1 模式 B 输入格式 | 定为 master Output Shape 的 `key: value` 文本块（非 JSON）；并要求 `citation_fit` 每行以卡片 ID 开头，新增 `rival_resolution:` 字段 | masters 实际就输出这种文本块；`rival_resolution` 是把 §8.2 第 3 条变成可机械核对的最小新增 |
 | D | Spec §11 Phase 1 | 5 张样例卡片与最小 corpus 放 `tests/fixtures/`；`references/classics/cards/` 本期只建带表头的空文件 | 固件语料不得污染真实语料目录，否则 `PROVENANCE.md` 的 sha256 基线从一开始就是假的。真实卡片随 Phase 2 语料落地 |
+| E | Spec §8.3 / §9.1 模式 B 第 5 条 | 「依据索引覆盖正文全部结构性论断」**不做脚本检查**；改为检查「报告的依据索引必须至少声明一条依据」 | 与 §8.3 自身的「正文不带角标」硬规则冲突：格式正确的报告正文里按定义没有卡片 ID，`body_ids` 恒为空，已实现的方向（正文 ID 必须出现在索引中）对合规报告结构性空转。「正文结构性论断」与「孤证不立」的「事件级判断」同类，无法从自由文本可靠分类 —— 见偏差 B 的同一理由。故只保留可机械判定的下界：报告若一条卡片都没声明，必须显式写 `citations:` 或「无典籍条文支撑」，不得沉默通过 |
 
 ---
 
@@ -4038,9 +4039,49 @@ git commit -m "feat(policy): make citation rules executable and wire classics la
 
 ---
 
+#### 全分支终审修复轮（2026-08-26）：文档半边契约与四处机械缺口
+
+终审确认代码路径经得起对抗性探查，但**契约的文档半边不成立**：多个已发布文件
+指示的格式/命令根本跑不通。卡片库本期为空，136 个测试因此全绿而一个都没发现 ——
+每一处都会在 Phase 3 卡片编纂第一天生效。
+
+先落地回归护栏 `tests/test_output_shape_roundtrip.py`（本轮唯一新增测试文件）：
+它不做 `assertIn`，而是抽出每个 `## Output Shape` 围栏块，**按该块自身的注释所
+指示的方式填充**，再断言真正的 `parse_answer`/`check_answer` 判 `VALID`。
+`citation_fit` 条目的缩进由文件自己的注释推导（见 `fit_entry`），所以一个告诉
+作者「行首为该 ID」的文件在这里就会渲染出顶格行，round-trip 随即失败并点名该
+文件。先写、先确认失败（9 个文件 × 2 种填法 = 18 处失败），再改文档。
+
+本轮修复：
+
+| # | 问题 | 处理 |
+|---|---|---|
+| I1 | 九个文件指示 `citation_fit` 顶格写 ID，而 `CONTINUATION` 要求缩进 | 九处注释改为「缩进两格，行首为该 ID」；`referee.md` 第 2 条描述同步；`index.md` 措辞收紧 |
+| I2 | 裸行 `依据索引` 被当作报告标记；报告放宽后它同时**免掉** `citations:` 必填 | `INDEX_HEADING` 改为必须带 ATX `#`（即 `report-generation.md` 实际记录的形式）；保留尾注释容忍与 last-match-wins |
+| I3 | 层级门用全等比较 `pattern_call`，装饰枚举值即可绕过 | 取首个 token（`_leading_token`）；`formal_pattern_v2` 之类的更长 token 仍不匹配 |
+| I4 | 卡片 ID 前缀与语料文件之间无任何绑定，可产出「已核验的错误归属」 | 新增 `PREFIX_CORPUS`（元组值，为三命通会分卷预留）与 `_check_prefix_corpus`；映射取自 `index.md` 已有表格，并由 `test_index_contract` 解析该表反向锁定 |
+| I5 | `references/` 下 13 条命令用裸 `python3 scripts/...`，违反 `SKILL.md:144-148` 的完整安装路径不变式 | 全部改为完整安装路径；新增 `InstallPathContractTest` 扫描所有 `references/**/*.md` |
+| I6 | Spec §8.3/§9.1 声称的「索引覆盖正文全部结构性论断」既未实现也无法按原样实现 | (a) 记为偏差 E 并同步改 Spec；(b) 补上放宽自身的前提检查：报告索引一条卡片都没列出时，必须有 `citations:` 或「无典籍条文支撑」 |
+| M1 | `run_answer_mode` 从不跑 `check_cards` | `referee.md` 义务 1 明确要求先跑 `--cards` 再跑 `--answer`，并说明 `--answer` 不核对卡片库本身 |
+| M2 | 自指竞合过模式 A，到模式 B 变成「X 与 X 互为竞合」 | `_check_rivals` 两行守卫 |
+| M3 | `citations: no_classical_basis` 带模板注释被误判「为空」 | 判等前剥掉尾部 `#` 注释；等值判断本身仍是全等 |
+| M4 | `ziwei-master` 与 `day-selection-master` 互抄同一句，各自点了对方的书 | 各自改为自己的典籍与二期前缀 |
+| M5 | `README.md` 声称 `corpus/PROVENANCE.md` 已随包发布 | README 与 `index.md` 统一改为「本期 `corpus/` 为空目录，随 Phase 2 落地」 |
+
+I2 的 `INDEX_HEADING` 现为 `^\s*#{1,6}\s*依据索引\s*(?:#.*)?$`（上文第 3 轮记录
+的裸行可选形式已被本轮取代）。`tests/test_checks_answer.py` 中两处钉住裸行形式的
+用例同步改为 ATX 形式 —— 它们编码的是简报产物，不是已发布契约。
+
+护栏复核：`--cards references/classics --count` 仍为 `cards: 0` / `VALID` / 退出 0；
+非报告型输入缺 `citations:` 仍被拒；continuation 终止、`no_classical_basis` 全等、
+`CARD_ID` lookaround、last-match-wins、重复 `citations` 检测、行内 `citation_fit`、
+层级门与竞合守卫共用的加宽 `cited` 集合，全部未回退。
+
+---
+
 ## 完成后的状态
 
-- `python3 -m unittest discover -s tests -t . -v` —— 136 tests，全绿
+- `python3 -m unittest discover -s tests -t . -v` —— 165 tests，全绿
 - `scripts/validate_citations.py` 双模式可用，固件语料下全链路跑通
 - `scripts/search_classics.py` 卡片与原文双路检索可用
 - 四处输出契约改写完成，三处旧措辞不再出现

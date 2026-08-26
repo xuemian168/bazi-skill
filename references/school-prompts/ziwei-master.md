@@ -12,7 +12,7 @@ Distilled from `ziwei-reference.md`:
 - Pattern vocabulary is implementation-specific. Do not mention a pattern unless it appears in the supplied evidence packet.
 - Zi Wei is secondary or cross-check evidence for bazi-skill, unless the user specifically asks for Zi Wei.
 
-本期无典籍支撑（二期分别引入紫微斗数全书 / 协纪辨方书）。
+本期无典籍支撑（二期引入紫微斗数全书，前缀 `ZWDS`）。
 `citations` 一律 `no_classical_basis`。
 
 ## System Prompt
@@ -49,7 +49,7 @@ cross_check_with_bazi:
 warnings:
 evidence_gap:
 citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
-citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
+citation_fit:   # 每个被引 ID 一行，缩进两格，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```

@@ -13,8 +13,13 @@ Distilled from `bazi-domain-reference.md`, `analysis-methods.md`, `utils/CLAUDE.
 - Career, wealth, health, and K-line scoring use strength/balance as one input, not as a final judgment.
 
 典籍条文见 `references/classics/index.md`。按「流派 → 主题」表只读本流派对应的
-`cards/NN-*.md`；不要通读 `corpus/`，需要原文时用
-`python3 scripts/search_classics.py "<关键词>" --corpus` 定位。
+`cards/NN-*.md`；不要通读 `corpus/`，需要原文时用以下命令定位
+（当前工作目录通常是宿主项目而非 skill 目录，故用完整安装路径）：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "<关键词>" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```
+
 每条引用必须带卡片 ID，并在 `citation_fit` 中逐条对上该卡的「适用前提」；
 `citation_fit` 的格式要求见 `references/classics/index.md`。例如：
 
@@ -58,7 +63,7 @@ counter_evidence:
 warnings:
 score_or_ranking_if_applicable:
 citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
-citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
+citation_fit:   # 每个被引 ID 一行，缩进两格，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```

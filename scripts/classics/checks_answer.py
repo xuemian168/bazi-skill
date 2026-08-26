@@ -24,20 +24,52 @@ CARD_ID = re.compile(rf"(?<![A-Za-z0-9])({_CARD_ID_CORE})(?![A-Za-z0-9-])")
 # and starting with a card id (not merely containing one somewhere).
 CONTINUATION = re.compile(rf"^\s+({_CARD_ID_CORE})(?![A-Za-z0-9-])")
 FIELD = re.compile(r"^\s*([A-Za-z_]+)\s*[:：]\s*(.*)$")
-# A bare heading line: "依据索引" alone, or a markdown ATX heading of it,
-# with an optional trailing comment (the brief's own canonical example is
-# "依据索引                                # 报告型输入的判别标记" — a line
-# ending immediately after the heading text would miss that literal form).
+# The 依据索引 section marker: a markdown ATX heading of it, optionally
+# followed by a trailing comment ("## 依据索引   # 报告型输入的判别标记" —
+# a pattern ending immediately after the heading text would miss that).
+#
+# The `#` marker is REQUIRED. A bare, unmarked `依据索引` line used to
+# match, and no file under references/ documents that form —
+# report-generation.md documents `## 依据索引`. While `is_report` merely
+# *added* rule 6 that was a harmless over-application; once report-type
+# input stopped requiring a `citations:` field, a false `is_report` also
+# *removed* the mandatory-citations rule, so any answer carrying such a
+# line — including one that only quotes the report template inside a code
+# fence — silently lost that requirement.
+#
 # Anchoring to the whole line (rather than a substring search) means a
 # table of contents entry or a closing sentence that merely mentions the
 # heading text does not get mistaken for the section boundary.
-INDEX_HEADING = re.compile(r"^\s*(?:#{1,6}\s*)?依据索引\s*(?:#.*)?$")
+INDEX_HEADING = re.compile(r"^\s*#{1,6}\s*依据索引\s*(?:#.*)?$")
+# A trailing `# ...` hint comment is scaffolding, not part of a field's
+# value: every master template ships one on its `citations:` line.
+INLINE_COMMENT = re.compile(r"\s*#.*$")
 NO_BASIS = "no_classical_basis"
+# The sentence report-generation.md tells authors to write for a passage
+# with no classical support. It is the report layer's spelling of
+# `no_classical_basis`.
+NO_BASIS_STATEMENT = "无典籍条文支撑"
 # Lookaround instead of \b, for the same reason CARD_ID uses it: \b does
 # not fire between a CJK character and an ASCII letter/digit, so
 # "无引用no_classical_basis" (no space before the token) would otherwise
 # never match.
 NO_BASIS_TOKEN = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(NO_BASIS)}(?![A-Za-z0-9_])")
+
+
+def _leading_token(value: str) -> str:
+    """The first token of a closed-enum field value.
+
+    `pattern_call` is a closed enum (ziping-pattern-master.md's Output
+    Shape lists all four values), and the tier gate compared it for exact
+    equality — so `formal_pattern（正官格）`, a natural annotation for a
+    model to add, silently disabled the only machine-enforced form of spec
+    8.1's hard rule. Splitting at the first separator recovers the enum
+    value while keeping the match exact: `formal_pattern_v2` is a
+    different token, not a decorated `formal_pattern`. The
+    closed-vocabulary objection that rightly applies to field *keys* does
+    not apply here, because this vocabulary really is closed.
+    """
+    return re.split(r"[\s（(|#,，]", value.strip(), maxsplit=1)[0]
 
 
 def parse_answer(text: str) -> dict[str, object]:
@@ -103,11 +135,18 @@ def parse_answer(text: str) -> dict[str, object]:
             rival_resolutions.append(raw.strip())
 
     raw_citations = fields.get("citations")
-    no_basis = raw_citations is not None and raw_citations.strip() == NO_BASIS
-    citations = [] if no_basis else CARD_ID.findall(raw_citations or "")
-    mixed_basis = bool(citations) and bool(
-        NO_BASIS_TOKEN.search(raw_citations or "")
+    # Strip the trailing hint comment before judging the value: every
+    # master template ships `citations:      # 必填。…；确无可引则写
+    # no_classical_basis`, so an author who fills in `no_classical_basis`
+    # and leaves the shipped comment in place used to be told
+    # "`citations` 为空" — a statement untrue of the input. Only the
+    # comment is removed; the equality test below stays exact.
+    citations_value = (
+        "" if raw_citations is None else INLINE_COMMENT.sub("", raw_citations).strip()
     )
+    no_basis = raw_citations is not None and citations_value == NO_BASIS
+    citations = [] if no_basis else CARD_ID.findall(citations_value)
+    mixed_basis = bool(citations) and bool(NO_BASIS_TOKEN.search(citations_value))
 
     body_ids: list[str] = []
     index_ids: list[str] = []
@@ -121,12 +160,13 @@ def parse_answer(text: str) -> dict[str, object]:
         "mixed_no_classical_basis": mixed_basis,
         "citations": citations,
         "citation_fit_ids": fit_ids,
-        "pattern_call": fields.get("pattern_call", ""),
+        "pattern_call": _leading_token(fields.get("pattern_call", "")),
         "rival_resolutions": rival_resolutions,
         "is_report": index_start is not None,
         "body_ids": body_ids,
         "index_ids": index_ids,
         "duplicate_citations_field": citations_field_count > 1,
+        "has_no_basis_statement": NO_BASIS_STATEMENT in text,
     }
 
 
@@ -205,6 +245,22 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
                     f"{card_id} 与 {rival.card_id} 互为竞合，"
                     f"必须给出同时点到两者的 rival_resolution"
                 )
+
+    if is_report and not answer["index_ids"]:
+        # The citations relaxation rests on one premise: a report's 依据索引
+        # table *is* its citation declaration, so a separate `citations:`
+        # field would only duplicate it. A table naming no card declares
+        # nothing, and the same silence is rejected outright for a master
+        # output — so the premise has to be checked, not assumed. This is
+        # deliberately not spec 8.3's per-claim coverage check, which the
+        # mandatory 正文不带角标 rule makes unimplementable as specified
+        # (see plan deviation E).
+        if not answer["has_citations_field"] and not answer["has_no_basis_statement"]:
+            errors.append(
+                "报告型输入的「依据索引」未列出任何卡片 ID："
+                "请补全该表，或写明 `citations:`，或按 report-generation.md "
+                f"在相应段落显式声明「{NO_BASIS_STATEMENT}」"
+            )
 
     if is_report:
         indexed = set(answer["index_ids"])
