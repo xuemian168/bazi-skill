@@ -1979,27 +1979,31 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
         if card_id not in answer["citation_fit_ids"]:
             errors.append(f"{card_id} 缺少对应的 citation_fit 说明")
 
+    # Report-type input may have no `citations:` field at all now, so any
+    # rule that judges *which cards support the answer* must not key off
+    # that field alone — otherwise simply omitting `citations:` on a
+    # report would silently drop rules that should still apply.
+    # `index_ids` is what the report actually claims to rely on (every id
+    # appearing in/after the 依据索引 heading), so it is folded into the
+    # evidence set whenever the input is a report, whether or not
+    # `citations:` was also supplied. Both the pattern_call tier gate
+    # (rule 4) and the rival-pair guard (rule 5) read from this same
+    # widened set, so a report can satisfy either purely through its
+    # 依据索引 table.
+    cited = set(citations)
+    if is_report:
+        cited |= set(answer["index_ids"])
+
     if answer["pattern_call"] == "formal_pattern":
         strong = {"核心论断", "操作规则"}
         if not any(
-            by_id[c].tier in strong for c in citations if c in by_id
+            by_id[c].tier in strong for c in cited if c in by_id
         ):
             errors.append(
                 "pattern_call 为 formal_pattern 但无「核心论断」或「操作规则」"
                 "层级的卡片支撑，应降级为 pattern_tendency"
             )
 
-    # Report-type input may have no `citations:` field at all now, so the
-    # rival-pair guard must not key off that field alone — otherwise
-    # simply omitting `citations:` on a report would silently drop the
-    # requirement that a cited rival pair carry a visible
-    # rival_resolution. `index_ids` is what the report actually claims to
-    # rely on (every id appearing in/after the 依据索引 heading), so it is
-    # folded in whenever the input is a report, whether or not
-    # `citations:` was also supplied.
-    cited = set(citations)
-    if is_report:
-        cited |= set(answer["index_ids"])
     resolved = "\n".join(answer["rival_resolutions"])
     for card_id in sorted(cited):
         card = by_id.get(card_id)
@@ -2341,6 +2345,72 @@ validator checks their content if they are present anyway — closing the
 ambiguity this round-trip check just exposed. Net: +5 tests over the 74
 above.
 
+#### Post-Task-11 correction, round 2 (2026-08-26): the tier gate had the same narrow evidence source the rival guard was already fixed for
+
+Re-review of the round-1 fix confirmed the relaxation itself did not
+become a bypass — every other rule (duplicate `citations`, mixed
+`no_classical_basis`, unknown-card, rule 6 body→index, unknown-index-card)
+still fires unconditionally, and the rival-pair widening to `index_ids`
+was singled out as correct. But `pattern_call: formal_pattern`'s tier
+gate (rule 4) still read only the field-derived `citations` list, never
+widened to `index_ids` the way the rival-pair `cited` set was. Before
+round 1 this was invisible, because `citations:` was mandatory, so rule
+4's evidence source was always populated whenever the input was
+otherwise valid. After round 1, a fully correct report that declares its
+核心论断-tier support solely through the 依据索引 table, and happens to
+carry a `pattern_call: formal_pattern` line, was falsely rejected — the
+same shape of bug the rival-pair fix had already closed for rule 5, just
+left open one rule over. Reproduced against `tests/fixtures` before
+fixing:
+
+```bash
+printf 'pattern_call: formal_pattern\n正文提到 DTS-0001。\n\n## 依据索引\n\n| DTS-0001 | 滴天髓 | 能知衰旺之真机 | 月令齐备 |\n' \
+  | python3 scripts/validate_citations.py --answer - --classics-root tests/fixtures
+# INVALID — pattern_call 为 formal_pattern 但无「核心论断」或「操作规则」层级的卡片支撑
+```
+DTS-0001 *is* 核心论断-tier and *is* properly cited — just via the index
+rather than the field.
+
+Fix: the widened `cited` set (`citations`, unioned with `index_ids` when
+`is_report`) is now computed once, before both rule-4's tier check and
+rule 5's rival-pair check, and both read from it. This keeps the two
+relaxation-aware rules consistent rather than fixing one and leaving the
+other's narrower evidence source as a trap for the next person who reads
+rule 5's comment and reasonably assumes rule 4 works the same way.
+`ReportFormalPatternTierEvidenceTest` (2 new cases) covers: a report
+declaring `pattern_call: formal_pattern` with its only supporting card
+(核心论断 tier) cited purely through the index table — no `citations:`
+field at all — now passes; and, as the regression guard, the same shape
+but with only a 例证-tier card cited (via index, still no `citations:`
+field) still fails with the tier error, proving the widening did not
+turn rule 4 into a check that never fires for reports. Only the first of
+these two failed against the pre-round-2 code — confirmed by running
+each individually rather than assumed — since the second already held
+before this round too (an absent `citations:` field made `citations`
+empty pre-relaxation, so the tier check already fired unconditionally
+for any report without the field, correctly by accident; round 2 makes
+it fire for the right reason).
+
+The re-review also folded in a documentation gap this same diff had left
+open: `references/report-generation.md`'s 依据索引 section never
+mentioned `rival_resolution`, even though the validator requires it
+whenever a report's index lists two mutually-竞合 cards (confirmed by
+probe) — a report author following the documentation literally could not
+satisfy a rule the tooling enforces. Added one rule bullet documenting
+that a 依据索引 listing two 竞合 cards must carry a
+`rival_resolution: <采纳ID> over <落选ID> — <理由>` line in the 依据索引
+section (the natural home, since that is where the report's traceability
+already lives) — reusing the exact field shape `referee.md` already
+documents for the master/referee layer, for consistency.
+`test_report_documents_rival_resolution` (1 new case) asserts the file
+documents it; confirmed to fail against the pre-fix file (`grep -c
+rival_resolution references/report-generation.md` → 0 before, 1 line
+after). End-to-end re-verified against `tests/fixtures`: a report citing
+both DTS-0001 and ZPZQ-0001 (竞合 per the fixture cards) through its
+index with no `rival_resolution` line → `INVALID`; the same report with
+`rival_resolution: ZPZQ-0001 over DTS-0001 — ...` added → `VALID`. Net:
++3 tests over the 79 above.
+
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
@@ -2348,8 +2418,10 @@ Expected: PASS，74 tests（42 基线 + 13 个 Step 1 的 `test_checks_answer.py
 + 1 个 `CliAnswerTest::test_unreadable_answer_file_exits_two` + 12 个
 round 1 post-review 新增的 `test_checks_answer.py` 用例 + 2 个 round 1
 post-review 新增的 `test_cli_cards.py` 用例 − 1 个 round 2 移除的用例 + 3 个
-round 2 新增的用例 + 2 个 round 3 新增的用例）；加上 post-Task-11 修正新增的
-5 个 `ReportCitationsFieldOptionalTest` 用例 = 79（本任务自身范围内的累计数，
+round 2 新增的用例 + 2 个 round 3 新增的用例）；加上 post-Task-11 修正 round 1
+新增的 5 个 `ReportCitationsFieldOptionalTest` 用例 = 79，再加上 round 2 新增
+的 2 个 `ReportFormalPatternTierEvidenceTest` + 1 个
+`test_report_documents_rival_resolution` = 82（本任务自身范围内的累计数，
 不含 Task 7-10 各自新增的用例——实际运行时的套件总数以 Task 11 区块的
 Expected: PASS 为准）
 
@@ -3695,6 +3767,39 @@ round-trip. Five new tests landed in `test_checks_answer.py`
 (`ReportCitationsFieldOptionalTest`); with those, the actual suite total
 became 127 (122 + 5), confirmed by running the full discovery suite.
 Net for this correction: +5 tests over the 122 above.
+
+#### Post-implementation correction, round 2 (2026-08-26): tier-gate evidence source and a missing `rival_resolution` doc gap
+
+A re-review of round 1 found two more issues in this same area, both
+folded into this task's own correction trail since round 1's diff
+touched exactly the section involved:
+
+1. `check_answer`'s `pattern_call: formal_pattern` tier gate (rule 4) had
+   not been widened to `index_ids` the way round 1 widened the
+   rival-pair guard (rule 5) — so a fully correct report declaring its
+   核心论断-tier support solely through the 依据索引 table, with a
+   `pattern_call: formal_pattern` line and no `citations:` field, was
+   falsely rejected. See Task 6's "Post-Task-11 correction, round 2"
+   section above for the fix and its two new tests
+   (`ReportFormalPatternTierEvidenceTest`).
+2. `references/report-generation.md` documented the 依据索引 table and
+   the `no_classical_basis` annotation, but never mentioned
+   `rival_resolution` — even though the validator requires it whenever a
+   report's index lists two mutually-竞合 cards. A report author
+   following the documentation literally could not satisfy a rule the
+   tooling enforces. Added one rule bullet: a 依据索引 listing two
+   竞合 cards must carry a
+   `rival_resolution: <采纳ID> over <落选ID> — <理由>` line in the 依据
+   索引 section, reusing the exact field shape `referee.md` already
+   documents. `test_report_documents_rival_resolution` (1 new case)
+   confirms the file documents it; confirmed to fail against the
+   pre-round-2 file (`grep -c rival_resolution
+   references/report-generation.md` → 0 before).
+
+With round 2's 3 new tests (2 in `test_checks_answer.py` + 1 in
+`test_report_contract.py`), the actual suite total became 130 (127 + 3),
+confirmed by running the full discovery suite. Net for this correction:
++3 tests over the 127 above.
 
 - [ ] **Step 5: 提交**
 

@@ -70,6 +70,10 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
   不需要另外携带 master 输出层的 `citations:` / `citation_fit:` 字段；
   校验器对报告型输入不要求这两个字段存在，若报告中确实写了这两个字段，
   校验器仍会照常检查其内容。
+- 若依据索引列出的卡片中有两张互为「竞合」，须在依据索引章节内追加一行
+  `rival_resolution: <采纳ID> over <落选ID> — <理由>`，记录取舍依据；这是
+  裁判在校勘中的取舍，报告读者应当能看到，不应只存在于裁判的工作记录中。
+  校验器会在这种情况下强制要求该行存在。
 
 ## Output Routes
 

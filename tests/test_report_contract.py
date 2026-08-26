@@ -27,6 +27,15 @@ class ReportContractTest(unittest.TestCase):
     def test_report_documents_no_basis_annotation(self):
         self.assertIn("无典籍条文支撑", self.report)
 
+    def test_report_documents_rival_resolution(self):
+        # Round 2 correction: the validator enforces rival_resolution
+        # whenever a report's 依据索引 lists two mutually-竞合 cards
+        # (confirmed by probe), but the report contract never told an
+        # author that field exists. A report author following the
+        # documentation literally must be able to satisfy every rule the
+        # tooling enforces.
+        self.assertIn("rival_resolution", self.report)
+
     def test_safety_editor_checks_index_section(self):
         self.assertIn("依据索引", self.safety)
 

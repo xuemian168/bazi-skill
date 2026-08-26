@@ -481,5 +481,53 @@ class ReportCitationsFieldOptionalTest(unittest.TestCase):
         )
 
 
+class ReportFormalPatternTierEvidenceTest(unittest.TestCase):
+    """Round 2 correction: the pattern_call tier gate (rule 4) read only the
+    `citations` field-derived list, the same narrow evidence source the
+    rival-pair guard (rule 5) used before it was widened to also draw on
+    `index_ids` for report-type input. Before the citations-field
+    relaxation this was invisible, because `citations:` was mandatory so
+    rule 4's evidence source was always populated whenever the input was
+    otherwise valid. After the relaxation, a fully correct report that
+    declares its 核心论断-tier support solely through the 依据索引 table —
+    with no `citations:` field at all — was falsely rejected by a stray
+    `pattern_call: formal_pattern` line, because `citations` was always
+    empty for such a report and `any(... for c in citations ...)` over an
+    empty list is always False."""
+
+    def test_report_formal_pattern_satisfied_via_index_only(self):
+        text = textwrap.dedent(
+            """\
+            pattern_call: formal_pattern
+            正文提到 DTS-0001。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 能知衰旺之真机 | 月令齐备 |
+            """
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+    def test_report_formal_pattern_still_fails_without_strong_tier_evidence_anywhere(self):
+        # Regression guard: widening the evidence source to include the
+        # index must not turn rule 4 into a check that never fires for
+        # reports. SMTH-0001 is 例证 tier (not 核心论断/操作规则), cited
+        # only through the index, with no citations: field either.
+        text = textwrap.dedent(
+            """\
+            pattern_call: formal_pattern
+            正文提到 SMTH-0001。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | SMTH-0001 | 某书 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("层级" in e for e in errors), errors)
+
+
 if __name__ == "__main__":
     unittest.main()
