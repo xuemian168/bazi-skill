@@ -1947,6 +1947,7 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
     errors: list[str] = []
     by_id = {card.id: card for card in cards}
     citations: list[str] = answer["citations"]
+    is_report: bool = answer["is_report"]
 
     if answer["duplicate_citations_field"]:
         errors.append(
@@ -1958,7 +1959,17 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
         errors.append(f"`citations` 中同时出现引用 ID 与 {NO_BASIS}，请二选一")
 
     if not answer["has_citations_field"]:
-        errors.append(f"缺少 `citations` 字段（无可引时应写 {NO_BASIS}）")
+        # Report-type input already declares which cards it relies on
+        # through the 依据索引 table itself (card id + 本盘适用理由
+        # columns) — that table *is* the report layer's citation
+        # mechanism. Requiring a separate machine-readable `citations:`
+        # field on top of it duplicates the table and puts master-layer
+        # scaffolding into a reader-facing artefact, so its *presence* is
+        # only mandatory for non-report input. When the field IS supplied
+        # on a report, it is still validated exactly like a master output
+        # (see the loop below) — this only relaxes absence, not content.
+        if not is_report:
+            errors.append(f"缺少 `citations` 字段（无可引时应写 {NO_BASIS}）")
     elif not citations and not answer["no_classical_basis"]:
         errors.append(f"`citations` 为空；无可引时应显式写 {NO_BASIS}")
 
@@ -1978,7 +1989,17 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
                 "层级的卡片支撑，应降级为 pattern_tendency"
             )
 
+    # Report-type input may have no `citations:` field at all now, so the
+    # rival-pair guard must not key off that field alone — otherwise
+    # simply omitting `citations:` on a report would silently drop the
+    # requirement that a cited rival pair carry a visible
+    # rival_resolution. `index_ids` is what the report actually claims to
+    # rely on (every id appearing in/after the 依据索引 heading), so it is
+    # folded in whenever the input is a report, whether or not
+    # `citations:` was also supplied.
     cited = set(citations)
+    if is_report:
+        cited |= set(answer["index_ids"])
     resolved = "\n".join(answer["rival_resolutions"])
     for card_id in sorted(cited):
         card = by_id.get(card_id)
@@ -1993,7 +2014,7 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
                     f"必须给出同时点到两者的 rival_resolution"
                 )
 
-    if answer["is_report"]:
+    if is_report:
         indexed = set(answer["index_ids"])
         for card_id in sorted(set(answer["body_ids"])):
             if card_id not in indexed:
@@ -2250,6 +2271,76 @@ and `NoClassicalBasisTest::test_no_classical_basis_glued_to_cjk_text_is_still_de
 both confirmed to fail against the round-2 code before their fixes
 landed. Net: +2 tests over the 72 above.
 
+#### Post-Task-11 correction (2026-08-26): report-type input no longer requires `citations:`/`citation_fit:`
+
+Task 11 added a `## 依据索引` fixed section contract to
+`references/report-generation.md` and, as its own verification step, ran
+the documented round-trip end to end: a report written exactly as that
+file specifies (body prose + a `## 依据索引` heading + the four-column
+table) came back `INVALID` with `缺少 \`citations\` 字段（无可引时应写
+no_classical_basis）` — even though the report's own 依据索引 table
+already declares both *which* cards are cited (the id column) and *why
+each applies* (the 本盘适用理由 column). `check_answer`'s
+`has_citations_field` gate was unconditional: it applied to every
+`--answer` input, master output, referee synthesis, or report alike,
+never branching on `is_report`.
+
+That gate conflates two layers this design deliberately keeps separate
+(spec 8.3's master → referee → report chain): `citations:`/
+`citation_fit:` are the *master* layer's machine-readable field pair; the
+依据索引 table is the *report* layer's reader-facing equivalent of the
+same information. Requiring the master-layer field pair inside a
+reader-facing report artefact put internal scaffolding into a document a
+human reads, and is not itself required for the report's own
+traceability property (every body id has a corresponding index row) to
+hold.
+
+Fix: for report-type input (`is_report` true, i.e. a `## 依据索引` heading
+anchors the document per `INDEX_HEADING`), `citations:`/`citation_fit:`
+become optional — their *absence* is no longer an error. Everything else
+is unchanged and, critically, unconditional on `is_report`:
+
+- If `citations:` IS supplied on a report, it is validated exactly as on
+  a master output (unknown-card check, per-id `citation_fit` check,
+  `no_classical_basis`/mixed-basis checks) — presence is relaxed, content
+  is not.
+- The rival-pair guard (`rival_resolution` required for a cited
+  竞合 pair) previously read only the `citations:` field's parsed ids.
+  Left as-is, that would have let `is_report` become a silent bypass: a
+  report citing two rival cards purely through its 依据索引 table, with
+  no `citations:` field at all, would never trigger the guard. Fixed by
+  folding `index_ids` (every card id appearing in/after the 依据索引
+  heading) into the checked set whenever `is_report` is true, regardless
+  of whether `citations:` was also supplied.
+- Rule 6 (body id → index) and the "index lists an unknown card" check
+  are untouched — they already ran unconditionally on `is_report` and did
+  not depend on `citations:`.
+- Non-report input (no 依据索引 heading) is completely unaffected:
+  `citations:` is still mandatory there, exactly as before.
+
+`ReportCitationsFieldOptionalTest` (5 new cases in
+`tests/test_checks_answer.py`) covers: a report with only the 依据索引
+table and no `citations:` → `[]`; the same report with a body id missing
+from the index → still reports the rule-6 error, and specifically does
+*not* also report a missing-`citations:` error; the same report with a
+malformed `citations:` field (an unknown card id) present → still
+reports it, proving the field is validated rather than skipped outright
+when a report happens to carry it; a report citing two rival cards
+through the index table alone (no `citations:` field) → still requires
+`rival_resolution`; and a non-report input with no `citations:` → still
+rejected, unchanged. Only 3 of the 5 fail against the pre-fix code — the
+malformed-field and non-report cases already passed before this round,
+since neither exercises a path the fix touches; each was still run
+against pre-fix code first rather than assumed, per this module's
+existing "verify, don't assume" discipline.
+
+`references/report-generation.md`'s 依据索引 section gained one
+clarifying rule bullet stating explicitly that report input does not
+need the master-layer `citations:`/`citation_fit:` fields, and that the
+validator checks their content if they are present anyway — closing the
+ambiguity this round-trip check just exposed. Net: +5 tests over the 74
+above.
+
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
@@ -2257,7 +2348,10 @@ Expected: PASS，74 tests（42 基线 + 13 个 Step 1 的 `test_checks_answer.py
 + 1 个 `CliAnswerTest::test_unreadable_answer_file_exits_two` + 12 个
 round 1 post-review 新增的 `test_checks_answer.py` 用例 + 2 个 round 1
 post-review 新增的 `test_cli_cards.py` 用例 − 1 个 round 2 移除的用例 + 3 个
-round 2 新增的用例 + 2 个 round 3 新增的用例）
+round 2 新增的用例 + 2 个 round 3 新增的用例）；加上 post-Task-11 修正新增的
+5 个 `ReportCitationsFieldOptionalTest` 用例 = 79（本任务自身范围内的累计数，
+不含 Task 7-10 各自新增的用例——实际运行时的套件总数以 Task 11 区块的
+Expected: PASS 为准）
 
 端到端手工验证：
 
@@ -3567,7 +3661,40 @@ Expected: FAIL —— `AssertionError: '依据索引' not found`
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，90 tests
+Expected: PASS，90 tests — stale brief-time estimate. Task 1-10's own review
+rounds had already grown the suite past this number before Task 11 started;
+the verified baseline going into Task 11 was 116, and 116 + 6 new
+`test_report_contract.py` cases = 122 was the actual post-Task-11 count
+(confirmed by running the full discovery suite, not assumed).
+
+`safety-editor.md`'s `## Checklist` also already had 7 items at
+implementation time, not the 5 this brief assumed — the file had grown
+during an earlier task's own review, the same drift as the stale test
+count above. The brief's item 6 text was inserted verbatim in the correct
+position (immediately after the existing item 5, which already covered
+report metadata/AI-boundary checks) and the two items that followed it
+were renumbered 6→7 and 7→8 so the list stayed a valid sequence; no
+wording was changed, only the surrounding numbers.
+
+#### Post-implementation correction (2026-08-26): `citations:`/`citation_fit:` are not required on report input
+
+Verifying this task's own round-trip claim — that a report written
+exactly as documented above validates — surfaced that it did not: running
+the literal example through `validate_citations.py --answer` returned
+`INVALID` with `缺少 \`citations\` 字段`, because `check_answer`
+(Task 6) required that field on every `--answer` input unconditionally,
+never branching on whether the input was a report. See Task 6's own
+"Post-Task-11 correction" section above for the fix: `is_report` input's
+`citations:`/`citation_fit:` presence is now optional (their *content* is
+still fully checked whenever supplied, and the rival-pair
+`rival_resolution` guard now also reads `index_ids`, so omitting the
+field cannot bypass it). `references/report-generation.md`'s 依据索引
+section gained one clarifying bullet stating this explicitly, so a future
+reader does not have to rediscover the ambiguity by re-running the
+round-trip. Five new tests landed in `test_checks_answer.py`
+(`ReportCitationsFieldOptionalTest`); with those, the actual suite total
+became 127 (122 + 5), confirmed by running the full discovery suite.
+Net for this correction: +5 tests over the 122 above.
 
 - [ ] **Step 5: 提交**
 

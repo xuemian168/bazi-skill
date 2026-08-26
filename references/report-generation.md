@@ -66,6 +66,10 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
   ```
 
   它会检查正文出现的每个卡片 ID 都在依据索引中，且索引中没有不存在的卡片。
+- 依据索引表本身就是报告层的引用声明（卡片ID 列 + 本盘适用理由列），报告
+  不需要另外携带 master 输出层的 `citations:` / `citation_fit:` 字段；
+  校验器对报告型输入不要求这两个字段存在，若报告中确实写了这两个字段，
+  校验器仍会照常检查其内容。
 
 ## Output Routes
 

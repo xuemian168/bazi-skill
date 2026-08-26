@@ -135,6 +135,7 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
     errors: list[str] = []
     by_id = {card.id: card for card in cards}
     citations: list[str] = answer["citations"]
+    is_report: bool = answer["is_report"]
 
     if answer["duplicate_citations_field"]:
         errors.append(
@@ -146,7 +147,17 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
         errors.append(f"`citations` 中同时出现引用 ID 与 {NO_BASIS}，请二选一")
 
     if not answer["has_citations_field"]:
-        errors.append(f"缺少 `citations` 字段（无可引时应写 {NO_BASIS}）")
+        # Report-type input already declares which cards it relies on
+        # through the 依据索引 table itself (card id + 本盘适用理由
+        # columns) — that table *is* the report layer's citation
+        # mechanism. Requiring a separate machine-readable `citations:`
+        # field on top of it duplicates the table and puts master-layer
+        # scaffolding into a reader-facing artefact, so its *presence* is
+        # only mandatory for non-report input. When the field IS supplied
+        # on a report, it is still validated exactly like a master output
+        # (see the loop below) — this only relaxes absence, not content.
+        if not is_report:
+            errors.append(f"缺少 `citations` 字段（无可引时应写 {NO_BASIS}）")
     elif not citations and not answer["no_classical_basis"]:
         errors.append(f"`citations` 为空；无可引时应显式写 {NO_BASIS}")
 
@@ -166,7 +177,17 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
                 "层级的卡片支撑，应降级为 pattern_tendency"
             )
 
+    # Report-type input may have no `citations:` field at all now, so the
+    # rival-pair guard must not key off that field alone — otherwise
+    # simply omitting `citations:` on a report would silently drop the
+    # requirement that a cited rival pair carry a visible
+    # rival_resolution. `index_ids` is what the report actually claims to
+    # rely on (every id appearing in/after the 依据索引 heading), so it is
+    # folded in whenever the input is a report, whether or not
+    # `citations:` was also supplied.
     cited = set(citations)
+    if is_report:
+        cited |= set(answer["index_ids"])
     resolved = "\n".join(answer["rival_resolutions"])
     for card_id in sorted(cited):
         card = by_id.get(card_id)
@@ -181,7 +202,7 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
                     f"必须给出同时点到两者的 rival_resolution"
                 )
 
-    if answer["is_report"]:
+    if is_report:
         indexed = set(answer["index_ids"])
         for card_id in sorted(set(answer["body_ids"])):
             if card_id not in indexed:
