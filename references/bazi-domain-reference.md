@@ -122,5 +122,11 @@ When drafting prompt guidance or prose, use this order:
 6. Annual triggers that explain high-volatility years.
 
 Cite a classical text only through a card ID from `references/classics/index.md`.
-Every citation must survive `python3 scripts/validate_citations.py`. Delete any
-book-name mention that has no backing 卡片 ID —— 装饰性引用一律删除。
+Every citation must survive the validator below. Delete any book-name mention that
+has no backing 卡片 ID —— 装饰性引用一律删除。The working directory is normally a
+host project, not the skill directory, so script and `references/` paths use the
+full install path:
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer answer.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```

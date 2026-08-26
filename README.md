@@ -148,7 +148,9 @@ flowchart TD
 - `references/`：分主题参考文档，包括项目合约、分析方法、真太阳时、合盘、择时、报告生成、角色分工等。
 - `references/school-prompts/`：多流派大师与裁判的专属提示词和知识切片，要求证据不足时输出 `evidence_gap`，不补空白规则。
 - `references/classics/`：古籍知识层。`index.md` 三向路由、`cards/` 按命理主题分片的条文卡片、
-  `corpus/` 精选原文底库与 `PROVENANCE.md` 溯源清单。
+  `corpus/` 精选原文底库。本期 `cards/` 只有带表头的空文件，`corpus/` 为空目录 ——
+  条文卡片与语料底库（含 `corpus/PROVENANCE.md` 溯源清单）随语料入库分期落地，
+  校验链路先行可跑。
 - `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
 - `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
 

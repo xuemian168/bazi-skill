@@ -26,11 +26,24 @@ You are not a vote counter. Weight evidence by the source hierarchy below.
 
 裁判在综合之前必须完成以下四项：
 
-1. **核对存在性** —— 对每个 master 输出、以及裁判自己的最终综合，都要运行
-   `python3 scripts/validate_citations.py --answer <文件路径，或 - 读 stdin> --classics-root references/classics`，
-   确认其中每个被引卡片 ID 真实存在。裁判自己的输出同样要满足下方
+1. **核对存在性** —— 对每个 master 输出、以及裁判自己的最终综合，都要运行下面
+   代码块里的 `--answer` 命令，确认其中每个被引卡片 ID 真实存在。裁判自己的
+   输出同样要满足下方
    `## Output Shape` 中 `citations` / `citation_fit` / `rival_resolution`
    的字段要求 —— 否则同一条命令会把裁判输出本身判为 `INVALID`。
+
+   `--answer` **只核对答案怎么用卡片，不核对卡片库本身**：卡片可能一方竞合、
+   层级越权、原文与语料对不上或语料 sha256 已漂移，而答案仍被判 `VALID`。
+   因此每轮会诊开始前先跑一次 `--cards`，通过后再用 `--answer` 逐份核对。
+
+   当前工作目录通常是宿主项目而非 skill 目录，故脚本与 `references/` 一律用
+   完整安装路径；`<文件路径>` 相对宿主项目工作目录解析：
+
+   ```bash
+   python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+   python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer <文件路径，或 - 读 stdin> --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+   ```
+
 2. **核对适用前提与反例边界** —— 引用是否成立是两者的合取：逐条检查该卡
    「适用前提」是否被 evidence packet 满足，且本盘情形未落入该卡「反例边界」。
    前提不满足，或落入反例边界，两者任一发生该引用即**作废**，并在输出中记录
@@ -42,9 +55,10 @@ You are not a vote counter. Weight evidence by the source hierarchy below.
    「典籍条文 + 盘面特征」组合）。
 
 第 2 条**只被脚本部分检查**：`validate_citations.py --answer` 只核对
-`citation_fit` 字段是否存在、卡片 ID 是否位于行首，不核对说明内容是否真的
-满足「适用前提」、是否真的没有落入「反例边界」——两者任一为假，脚本仍会判
-`VALID`。内容真实性的核验由裁判自行执行，不能因为脚本跑过就当作已核对。
+`citation_fit` 字段是否存在、每条说明是否缩进两格且以卡片 ID 开头，不核对说明
+内容是否真的满足「适用前提」、是否真的没有落入「反例边界」——两者任一为假，
+脚本仍会判 `VALID`。内容真实性的核验由裁判自行执行，不能因为脚本跑过就当作
+已核对。
 
 第 4 条**不由脚本检查**：「事件级判断」无法从自由文本可靠分类，一个会漏判的
 自动检查比没有检查更危险 —— 它会给出虚假的安全感。因此这条由裁判自行执行，
@@ -80,7 +94,7 @@ evidence_used:
 school_consensus:
 school_disagreements:
 citations:         # 必填。裁判最终综合引用的卡片 ID，逗号分隔；无引用则写 no_classical_basis
-citation_fit:      # citations 中每个 ID 一行，行首为该 ID，说明其满足「适用前提」且未落入「反例边界」
+citation_fit:      # citations 中每个 ID 一行，缩进两格，行首为该 ID，说明其满足「适用前提」且未落入「反例边界」
 rival_resolution:  # 仅当 citations 中出现互为「竞合」的两张卡片时必填，见「引用审计义务」第 3 条
 final_synthesis:
 confidence:

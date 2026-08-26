@@ -1,7 +1,8 @@
+import re
 import unittest
 from pathlib import Path
 
-from classics import CARD_TIERS, ENABLED_PREFIXES, SCHOOLS
+from classics import CARD_TIERS, ENABLED_PREFIXES, PREFIX_CORPUS, SCHOOLS
 from classics.cards import load_cards
 
 REPO = Path(__file__).resolve().parents[1]
@@ -50,6 +51,29 @@ class IndexContractTest(unittest.TestCase):
         text = INDEX.read_text(encoding="utf-8")
         for school in SCHOOLS:
             self.assertIn(school, text, f"index.md missing school: {school}")
+
+    def test_prefix_corpus_mapping_matches_the_documented_table(self):
+        # `PREFIX_CORPUS` enforces index.md's 「典籍 → 主题」 table, so the
+        # two must not be able to drift apart: the row is the contract and
+        # the constant is its enforcement. Parsed out of the table rather
+        # than asserted as a substring, so a changed filename in either
+        # place fails here.
+        documented: dict[str, tuple[str, ...]] = {}
+        row = re.compile(
+            r"^\|\s*`([A-Z]{3,4})`\s*\|[^|]*\|[^|]*\|\s*(.+?)\s*\|\s*$"
+        )
+        for line in INDEX.read_text(encoding="utf-8").splitlines():
+            match = row.match(line)
+            if match:
+                documented[match.group(1)] = tuple(
+                    path.strip("` ")
+                    for path in match.group(2).split("、")
+                    if path.strip("` ")
+                )
+        self.assertEqual(documented, dict(PREFIX_CORPUS))
+
+    def test_every_enabled_prefix_has_a_corpus_binding(self):
+        self.assertEqual(sorted(PREFIX_CORPUS), sorted(ENABLED_PREFIXES))
 
     def test_empty_topic_files_parse_cleanly(self):
         cards, errors = load_cards(CLASSICS / "cards")

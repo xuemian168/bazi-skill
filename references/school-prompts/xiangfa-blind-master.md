@@ -50,7 +50,7 @@ supporting_evidence:
 warnings:
 evidence_gap:
 citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
-citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
+citation_fit:   # 每个被引 ID 一行，缩进两格，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
 ```

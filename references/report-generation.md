@@ -59,13 +59,20 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
 - 正文每个结构性论断必须能在依据索引中找到对应行。
 - 无典籍支撑的段落（如象法推演）在该段落末尾单独注明
   「该部分为象法推演，无典籍条文支撑」，不进入依据索引表。
-- 组稿完成后运行：
+- 组稿完成后运行（当前工作目录通常是宿主项目而非 skill 目录，故脚本与
+  `references/` 用完整安装路径，`report.md` 相对宿主项目工作目录解析）：
 
   ```bash
-  python3 scripts/validate_citations.py --answer report.md --classics-root references/classics
+  python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer report.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
   ```
 
   它会检查正文出现的每个卡片 ID 都在依据索引中，且索引中没有不存在的卡片。
+  它**不检查**「正文每个结构性论断都有对应索引行」—— 正文不带角标意味着正文里
+  按定义没有卡片 ID，这条覆盖关系无法机械判定，只能由裁判与作者执行。
+- **依据索引不得空表通过。** 依据索引一条卡片都没列出时，报告必须二选一：写出
+  `citations:` 字段（无可引则写 `no_classical_basis`），或在相应段落写明
+  「无典籍条文支撑」。校验器会强制这一条 —— 报告免写 `citations:` 的前提正是
+  「依据索引表本身就是引用声明」，而空表什么也没声明。
 - 依据索引表本身就是报告层的引用声明（卡片ID 列 + 本盘适用理由列），报告
   不需要另外携带 master 输出层的 `citations:` / `citation_fit:` 字段；
   校验器对报告型输入不要求这两个字段存在，若报告中确实写了这两个字段，

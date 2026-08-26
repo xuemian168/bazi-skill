@@ -35,6 +35,16 @@ class RefereeContractTest(unittest.TestCase):
     def test_lone_evidence_is_documented_as_prompt_rule_not_script_check(self):
         self.assertIn("不由脚本检查", self.referee)
 
+    def test_referee_requires_the_card_library_check_before_answer_checks(self):
+        # M1: `--answer` never runs the mode-A library check, so an answer
+        # can be certified VALID against a library with one-way rivals, bad
+        # tiers, unverified quotes, or a drifted sha256. Running the full
+        # library check on every --answer is a real cost, so the ordering is
+        # a documented duty rather than a code change — which makes deleting
+        # the sentence the failure mode this guards.
+        self.assertIn("--cards", self.referee)
+        self.assertIn("不核对卡片库本身", self.referee)
+
 
 class SkillMdHierarchySyncTest(unittest.TestCase):
     """SKILL.md is the always-loaded root entry point. If its inline
