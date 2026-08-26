@@ -27,14 +27,20 @@ The referee / 裁判 owns the final workflow:
 6. Produce the final answer, JSON, report spec, or structured report.
 7. Run deterministic validation and report QA.
 
-The referee is not a vote counter. If schools disagree, decide by evidence quality and source hierarchy:
+The referee is not a vote counter. If schools disagree, decide by evidence
+quality and source hierarchy:
 
-1. Code-computed chart facts and validated JSON.
-2. Project contract and schema.
-3. Task-specific method fit.
-4. Cross-school consensus.
-5. Single-school interpretation.
-6. Wording preference.
+1. code facts
+2. project contract
+3. 典籍条文（`核心论断` / `操作规则` 级）
+4. task-specific method fit
+5. 典籍条文（`例证` 级）
+6. cross-school consensus
+7. narrative preference
+
+典籍刻意拆成两档插在方法适配的两侧：核心论断压过方法适配，例证级低于方法适配。
+这是为了避免退化成「引了本书就赢」。`存疑` 级条文不进入源层级，只能作
+「另有一说」提示。
 
 ## Evidence Packet
 
