@@ -140,6 +140,13 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 
 ## Useful Commands
 
+These commands assume the current working directory is an arbitrary host
+project, not the skill's own directory: script paths and the skill's own
+`references/` paths always use the full install path
+`${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`; user-supplied data files
+(`result.json`, `answer.md`) resolve relative to that host-project working
+directory.
+
 Validate a JSON file:
 
 ```bash
@@ -155,18 +162,18 @@ cat result.json | python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts
 校验卡片库：
 
 ```bash
-python3 scripts/validate_citations.py --cards references/classics
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
 
 校验一份 master 输出或报告的引用使用：
 
 ```bash
-python3 scripts/validate_citations.py --answer answer.md --classics-root references/classics
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer answer.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
 
 检索条文：
 
 ```bash
-python3 scripts/search_classics.py "衰旺真机" --school 旺衰扶抑
-python3 scripts/search_classics.py "余寒犹存" --corpus
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "衰旺真机" --school 旺衰扶抑 --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "余寒犹存" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
