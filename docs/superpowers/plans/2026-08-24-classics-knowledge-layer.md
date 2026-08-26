@@ -3940,26 +3940,37 @@ backing 卡片 ID is decoration —— delete it.
 - `scripts/search_classics.py`: 零依赖检索，卡片优先、原文回落。
 ```
 
-在 `SKILL.md` 的 `## Useful Commands` 追加：
+在 `SKILL.md` 的 `## Useful Commands` 标题后插入一句工作目录假设说明，然后追加四条命令：脚本路径
+与 skill 自带的 `references/` 路径统一使用完整安装路径 `${CODEX_HOME:-$HOME/.codex}/skills/
+bazi-skill/...`，与既有两条 `validate_analysis_result.py` 命令保持同一约定（不能改成裸相对路径——
+那两条命令要在任意宿主项目工作目录下都能找到脚本，改成相对路径会改变其行为）；`answer.md` 等
+用户数据文件按调用时的宿主项目工作目录解析：
 
 ````markdown
+These commands assume the current working directory is an arbitrary host
+project, not the skill's own directory: script paths and the skill's own
+`references/` paths always use the full install path
+`${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`; user-supplied data files
+(`result.json`, `answer.md`) resolve relative to that host-project working
+directory.
+
 校验卡片库：
 
 ```bash
-python3 scripts/validate_citations.py --cards references/classics
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
 
 校验一份 master 输出或报告的引用使用：
 
 ```bash
-python3 scripts/validate_citations.py --answer answer.md --classics-root references/classics
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer answer.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
 
 检索条文：
 
 ```bash
-python3 scripts/search_classics.py "衰旺真机" --school 旺衰扶抑
-python3 scripts/search_classics.py "余寒犹存" --corpus
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "衰旺真机" --school 旺衰扶抑 --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "余寒犹存" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
 ````
 
@@ -3979,17 +3990,24 @@ python3 scripts/search_classics.py "余寒犹存" --corpus
   而是让输出可追溯、可反驳、边界清楚。
 ```
 
-在 `README.md` 的架构图中，把 `R["references/..."]` 节点之后补一个知识层节点：
+在 `README.md` 的架构图中，把 `R["references/..."]` 节点之后接入知识层节点：卡片与引用契约
+直接汇入 Evidence Packet，corpus 原文不直接进入证据包、只画成经 `search_classics.py --corpus`
+才能触达的旁支节点（对应 `references/classics/index.md` 「不作为阅读材料」的规定），并给
+`validate_citations.py` 配一个与 `validate_analysis_result.py` 对称的校验节点：
 
 ```mermaid
-    R --> RC["references/classics/<br/>条文卡片 + 精选原文 + 引用契约"]
+    R --> RC["references/classics/<br/>条文卡片 + 引用契约"]
     RC --> E
+    G -.->|"search_classics.py --corpus<br/>仅供核对引文，不入证据包"| RCC["corpus/<br/>精选原文底库"]
+    H --> IC["脚本校验<br/>validate_citations.py"]
+    IC -->|通过| J
+    IC -->|失败| G
 ```
 
 - [ ] **Step 4: 运行全套测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，96 tests
+Expected: PASS，136 tests
 
 确认旧措辞已全部清除：
 
@@ -4022,7 +4040,7 @@ git commit -m "feat(policy): make citation rules executable and wire classics la
 
 ## 完成后的状态
 
-- `python3 -m unittest discover -s tests -t . -v` —— 96 tests，全绿
+- `python3 -m unittest discover -s tests -t . -v` —— 136 tests，全绿
 - `scripts/validate_citations.py` 双模式可用，固件语料下全链路跑通
 - `scripts/search_classics.py` 卡片与原文双路检索可用
 - 四处输出契约改写完成，三处旧措辞不再出现

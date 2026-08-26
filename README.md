@@ -91,7 +91,7 @@ flowchart TD
     D --> E["Evidence Packet<br/>确认事实 + 用户约束 + 相关参考"]
     B --> R["references/<br/>宿主合约 / 分析方法 / 合盘 / 择时 / 报告"]
     R --> E
-    R --> RC["references/classics/<br/>条文卡片 + 精选原文 + 引用契约"]
+    R --> RC["references/classics/<br/>条文卡片 + 引用契约"]
     RC --> E
 
     E --> F["多流派大师层"]
@@ -108,11 +108,15 @@ flowchart TD
     F4 --> G
     F5 --> G
     F6 --> G
+    G -.->|"search_classics.py --corpus<br/>仅供核对引文，不入证据包"| RCC["corpus/<br/>精选原文底库"]
 
     G --> H["结构化输出<br/>解读 / JSON / 报告规格"]
     H --> I["脚本校验<br/>validate_analysis_result.py"]
+    H --> IC["脚本校验<br/>validate_citations.py"]
     I -->|通过| J["报告组稿<br/>结构化 / Markdown / HTML"]
+    IC -->|通过| J
     I -->|失败| G
+    IC -->|失败| G
     J --> K["最终交付<br/>专业报告 / 可解释建议 / 合约有效数据"]
 ```
 
