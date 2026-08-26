@@ -48,7 +48,7 @@ For complex BaZi/Zi Wei/K-line work, the main agent acts as **referee / 裁判**
 2. Load `references/school-prompts/index.md`, then assign only the school masters needed for the task: 子平格局, 旺衰扶抑, 调候, 盲派象法, 神煞辅助, 紫微, 择日, 合盘, and safety/report roles as applicable.
 3. Load each selected master's corresponding prompt file from `references/school-prompts/` before dispatching or simulating that role.
 4. Require each master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
-5. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
+5. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > 典籍条文（`核心论断`/`操作规则`）> task-specific method fit > 典籍条文（`例证`）> cross-school consensus > narrative preference — classics are deliberately split into two tiers around method fit, not collapsed into one (full hierarchy and rationale: `references/agent-roles.md`, `references/school-prompts/referee.md`).
 6. The referee synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
 7. Validate final artifacts with deterministic scripts before treating them as ready.
 

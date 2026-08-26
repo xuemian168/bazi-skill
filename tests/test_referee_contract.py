@@ -4,6 +4,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 AGENT_ROLES = REPO / "references" / "agent-roles.md"
 REFEREE = REPO / "references" / "school-prompts" / "referee.md"
+SKILL = REPO / "SKILL.md"
 
 
 class RefereeContractTest(unittest.TestCase):
@@ -21,6 +22,7 @@ class RefereeContractTest(unittest.TestCase):
 
     def test_referee_must_void_unmet_premises(self):
         self.assertIn("适用前提", self.referee)
+        self.assertIn("反例边界", self.referee)
         self.assertIn("作废", self.referee)
 
     def test_referee_must_record_rival_resolution(self):
@@ -32,6 +34,28 @@ class RefereeContractTest(unittest.TestCase):
 
     def test_lone_evidence_is_documented_as_prompt_rule_not_script_check(self):
         self.assertIn("不由脚本检查", self.referee)
+
+
+class SkillMdHierarchySyncTest(unittest.TestCase):
+    """SKILL.md is the always-loaded root entry point. If its inline
+    referee-workflow summary keeps the pre-Task-10, classics-blind
+    ordering, a referee that only ever sees SKILL.md (agent-roles.md and
+    referee.md are loaded conditionally) never learns classics outrank or
+    are outranked by method fit.
+    """
+
+    def setUp(self):
+        self.skill = SKILL.read_text(encoding="utf-8")
+
+    def test_skill_md_does_not_carry_the_stale_classics_blind_hierarchy(self):
+        self.assertNotIn(
+            "task-specific method fit > cross-school consensus",
+            self.skill,
+        )
+
+    def test_skill_md_hierarchy_summary_shows_both_classics_tiers(self):
+        self.assertIn("核心论断", self.skill)
+        self.assertIn("例证", self.skill)
 
 
 if __name__ == "__main__":

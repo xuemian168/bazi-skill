@@ -3353,26 +3353,41 @@ quality and source hierarchy:
 
 裁判在综合之前必须完成以下四项：
 
-1. **核对存在性** —— 运行
-   `python3 scripts/validate_citations.py --answer <master 输出> --classics-root references/classics`，
-   确认每个被引卡片 ID 真实存在。
-2. **核对适用前提** —— 逐条检查该卡「适用前提」是否被 evidence packet 满足。
-   不满足则该引用**作废**，并在输出中记录作废原因。作废后若该判断再无支撑，
-   须降级措辞。
+1. **核对存在性** —— 对每个 master 输出、以及裁判自己的最终综合，都要运行
+   `python3 scripts/validate_citations.py --answer <文件路径，或 - 读 stdin> --classics-root references/classics`，
+   确认其中每个被引卡片 ID 真实存在。裁判自己的输出同样要满足下方
+   `## Output Shape` 中 `citations` / `citation_fit` / `rival_resolution`
+   的字段要求 —— 否则同一条命令会把裁判输出本身判为 `INVALID`。
+2. **核对适用前提与反例边界** —— 引用是否成立是两者的合取：逐条检查该卡
+   「适用前提」是否被 evidence packet 满足，且本盘情形未落入该卡「反例边界」。
+   前提不满足，或落入反例边界，两者任一发生该引用即**作废**，并在输出中记录
+   作废原因（区分是前提未满足还是落入边界）。作废后若该判断再无支撑，须降级
+   措辞。
 3. **记录竞合取舍** —— 若两个 master 引用了互为「竞合」的卡片，必须在最终输出写出
    `rival_resolution: <采纳ID> over <落选ID> — <理由>`。**禁止静默取一。**
 4. **孤证不立** —— 事件级或人生结果级判断需 ≥2 条独立证据（不同典籍，或
    「典籍条文 + 盘面特征」组合）。
+
+第 2 条**只被脚本部分检查**：`validate_citations.py --answer` 只核对
+`citation_fit` 字段是否存在、卡片 ID 是否位于行首，不核对说明内容是否真的
+满足「适用前提」、是否真的没有落入「反例边界」——两者任一为假，脚本仍会判
+`VALID`。内容真实性的核验由裁判自行执行，不能因为脚本跑过就当作已核对。
 
 第 4 条**不由脚本检查**：「事件级判断」无法从自由文本可靠分类，一个会漏判的
 自动检查比没有检查更危险 —— 它会给出虚假的安全感。因此这条由裁判自行执行，
 并在输出中显式说明每个事件级判断依据了哪两条证据。
 ```
 
+`referee.md` 已有的 `## Output Shape` 模板同步补上 `citations` / `citation_fit`
+/ `rival_resolution`（后者仅当 citations 出现互为竞合的两卡时必填）三个字段，
+理由见下方「Task 10 复核修复」——旧模板没有这三个字段，按模板字面填写的
+裁判输出会被 `validate_citations.py --answer` 自身判 `INVALID`。
+
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，84 tests
+Expected: PASS，116 tests（Task 10 之前 108 个 + Task 10 新增 8 个：初版 6 个 +
+复核修复追加的 2 个 SKILL.md 同步测试）
 
 - [ ] **Step 5: 提交**
 
@@ -3381,6 +3396,64 @@ cd /Users/xuemian/SynologyDrive/QUT/bazi-skill
 git add references/agent-roles.md references/school-prompts/referee.md tests/test_referee_contract.py
 git commit -m "feat(referee): insert classics into source hierarchy and add citation audit"
 ```
+
+#### Task 10 复核修复
+
+独立复核对初版提出一个 Critical、两个 Important（外加一个 Minor 折入其中一
+条），逐一记录如下：
+
+1. **Critical —— `SKILL.md:51` 仍带着 Task 10 要替换掉的、对典籍无感的旧
+   源层级**（`code facts > project contract > task-specific method fit >
+   cross-school consensus > narrative preference`）。`SKILL.md` 是技能的
+   常驻根入口，`agent-roles.md`／`referee.md` 都是按需加载；裁判若只看到
+   `SKILL.md` 这行内联摘要，Task 10 的改动等于在根层被悄悄撤销。修复：把该行
+   换成同时点名 `核心论断`/`操作规则` 与 `例证` 两档、并标出二者相对
+   method fit 位置的紧凑写法，附指向 `agent-roles.md`／`referee.md` 的完整
+   出处指针；新增 `SkillMdHierarchySyncTest`（`assertNotIn` 旧写法子串
+   `task-specific method fit > cross-school consensus`，`assertIn`
+   `核心论断`／`例证`）锁定。
+2. **Important —— `referee.md` 的 `## Output Shape` 模板与四项审计义务未对齐。**
+   模板里没有 `citations`/`citation_fit`/`rival_resolution` 字段；复核者按
+   模板字面拼了一份裁判输出，跑 `validate_citations.py --answer` 得到
+   `INVALID —— 缺少 citations 字段`。同时第 1 条审计义务只写「核对
+   master 输出」，没人要求裁判校验自己那份综合——而 rival_resolution、
+   citation_fit 的取舍恰恰发生在裁判自己的综合里。修复：模板补齐三个字段
+   （`rival_resolution` 注明仅在互为竞合的两卡同时被引用时必填），第 1 条
+   审计义务明确「对每个 master 输出、以及裁判自己的最终综合都要跑」该命令。
+   用 `tests/fixtures` 卡片库复核修好后的模板：缺三字段时 `INVALID`，补齐后
+   `VALID`；仅引用竞合对中一张时无需 `rival_resolution`，两张都引用则缺失
+   `rival_resolution` 时 `INVALID`——均与脚本实际行为一致。
+3. **Important —— 第 2 条没有像第 4 条那样声明「不由脚本检查」。** 第 2 条紧跟在
+   第 1 条真实的脚本调用之后，容易让人以为同一次运行也覆盖了第 2 条。复核者
+   实测：把 `citation_fit` 写成与卡片真实「适用前提」矛盾的内容，
+   `checks_answer.py` 依旧判 `VALID`——它只核对该字段是否存在、ID 是否在行首，
+   从不核对内容真假，「适用前提」与「反例边界」两半均未被机器核验。这正是
+   Task 7 复核抓到过一次的失败模式（反例边界内的卡片被当作正确答案检出）。
+   修复：在第 2 条后追加「只被脚本部分检查」的说明段，点名脚本只查字段存在、
+   不查内容真伪。
+4. **Minor（折入本轮）—— 锁定第 2 条的 `反例边界` 扩展。**
+   `test_referee_must_void_unmet_premises` 原本只断言 `适用前提` 与 `作废`，
+   未断言 `反例边界`；补上后者，防止未来编辑把第 2 条悄悄退回成只查半个合取
+   条件而测试仍然全绿。
+
+复核确认：新层级与四项义务在两个文件中逐字一致；`rival_resolution` 按文档
+写法真能让 `validate_citations.py` 判 VALID，而同一份取舍若只写成散文则正确
+地被判 INVALID；第 1 条点名的都是真实存在的脚本 flag。两处此前自报的偏离
+（第 2 条覆盖反例边界、去掉 `referee.md` 内已过时的旧层级列表）均判定正确。
+复核也记录了一处非缺陷观察：新层级去掉了旧版的「single-school
+interpretation」一档，是计划本身的决定，隐含顺序仍然合理，留给最终整体复核。
+
+修复后重跑 `python3 -m unittest discover -s tests -t . -v`：116/116 通过
+（Task 10 之前 108 个 + 本任务 8 个）。`SKILL.md`、`references/school-prompts/referee.md`
+两处的 CJK 标点码位、控制字符、反引号与代码围栏配对均逐一核对。
+
+Committed together with this doc sync as a single commit (staged:
+`SKILL.md`, `references/school-prompts/referee.md`,
+`tests/test_referee_contract.py`, this plan file). `SKILL.md` is outside
+Task 10's originally-scoped file list — the coordinator explicitly
+authorised this edit and will tell Task 12's implementer (who otherwise
+also touches `SKILL.md`, but only to append routing/resource entries) that
+this line is already handled.
 
 ---
 
