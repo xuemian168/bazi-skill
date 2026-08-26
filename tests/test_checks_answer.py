@@ -389,5 +389,97 @@ class ContinuationLineIsNotAFieldTest(unittest.TestCase):
         self.assertEqual(check_answer(answer, LIBRARY), [])
 
 
+class ReportCitationsFieldOptionalTest(unittest.TestCase):
+    """Post-Task-11 correction: a report's 依据索引 table already declares
+    which cards are cited (id column) and why each applies (本盘适用理由
+    column) — that table *is* the report layer's citation mechanism.
+    Requiring a separate machine-readable `citations:`/`citation_fit:`
+    field pair on top of it conflates the master layer with the report
+    layer and puts master-facing scaffolding into a reader-facing
+    artefact. For report-type input (`is_report` true) those two fields'
+    *presence* becomes optional. Everything else must still catch a
+    report exactly as it would catch a master output with the same
+    content — is_report must not become a way to bypass a check."""
+
+    def test_report_without_citations_field_passes(self):
+        text = textwrap.dedent(
+            """\
+            正文提到 DTS-0001。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        self.assertEqual(check_answer(parse_answer(text), LIBRARY), [])
+
+    def test_report_without_citations_field_still_catches_body_index_mismatch(self):
+        # The guard that must survive: omitting citations: must not also
+        # blind rule 6 (body id must appear in the index).
+        text = textwrap.dedent(
+            """\
+            正文提到 DTS-0001 与 ZPZQ-0001。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(
+            any("依据索引" in e and "ZPZQ-0001" in e for e in errors), errors
+        )
+        self.assertFalse(
+            any("citations" in e and "缺少" in e for e in errors), errors
+        )
+
+    def test_report_with_malformed_citations_field_still_fails(self):
+        # citations:/citation_fit: are optional, not exempt: supplied and
+        # wrong must still be caught, not silently skipped because the
+        # input is a report.
+        text = textwrap.dedent(
+            """\
+            citations: DTS-9999
+
+            正文提到 DTS-0001。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("DTS-9999" in e for e in errors), errors)
+
+    def test_report_without_citations_field_still_requires_rival_resolution(self):
+        # Adjudication between competing cards must stay visible in the
+        # report itself, not only in the referee's working notes — this
+        # must not become reachable by simply not writing citations:.
+        text = textwrap.dedent(
+            """\
+            正文同时依 DTS-0001 与 ZPZQ-0001 定格。
+
+            ## 依据索引
+
+            | 卡片ID | 出处 | 原文 | 适用理由 |
+            | DTS-0001 | 滴天髓 | 原文 | 理由 |
+            | ZPZQ-0001 | 子平真诠 | 原文 | 理由 |
+            """
+        )
+        errors = check_answer(parse_answer(text), LIBRARY)
+        self.assertTrue(any("rival_resolution" in e for e in errors), errors)
+
+    def test_non_report_without_citations_field_is_still_rejected(self):
+        # The non-report path (master/referee output) is untouched: no
+        # 依据索引 heading means citations: is still mandatory.
+        errors = check_answer(parse_answer("school: x\n"), LIBRARY)
+        self.assertTrue(
+            any("citations" in e and "缺少" in e for e in errors), errors
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
