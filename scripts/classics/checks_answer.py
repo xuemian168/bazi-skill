@@ -167,27 +167,31 @@ def check_answer(answer: dict[str, object], cards: list[Card]) -> list[str]:
         if card_id not in answer["citation_fit_ids"]:
             errors.append(f"{card_id} 缺少对应的 citation_fit 说明")
 
+    # Report-type input may have no `citations:` field at all now, so any
+    # rule that judges *which cards support the answer* must not key off
+    # that field alone — otherwise simply omitting `citations:` on a
+    # report would silently drop rules that should still apply.
+    # `index_ids` is what the report actually claims to rely on (every id
+    # appearing in/after the 依据索引 heading), so it is folded into the
+    # evidence set whenever the input is a report, whether or not
+    # `citations:` was also supplied. Both the pattern_call tier gate
+    # (rule 4) and the rival-pair guard (rule 5) read from this same
+    # widened set, so a report can satisfy either purely through its
+    # 依据索引 table.
+    cited = set(citations)
+    if is_report:
+        cited |= set(answer["index_ids"])
+
     if answer["pattern_call"] == "formal_pattern":
         strong = {"核心论断", "操作规则"}
         if not any(
-            by_id[c].tier in strong for c in citations if c in by_id
+            by_id[c].tier in strong for c in cited if c in by_id
         ):
             errors.append(
                 "pattern_call 为 formal_pattern 但无「核心论断」或「操作规则」"
                 "层级的卡片支撑，应降级为 pattern_tendency"
             )
 
-    # Report-type input may have no `citations:` field at all now, so the
-    # rival-pair guard must not key off that field alone — otherwise
-    # simply omitting `citations:` on a report would silently drop the
-    # requirement that a cited rival pair carry a visible
-    # rival_resolution. `index_ids` is what the report actually claims to
-    # rely on (every id appearing in/after the 依据索引 heading), so it is
-    # folded in whenever the input is a report, whether or not
-    # `citations:` was also supplied.
-    cited = set(citations)
-    if is_report:
-        cited |= set(answer["index_ids"])
     resolved = "\n".join(answer["rival_resolutions"])
     for card_id in sorted(cited):
         card = by_id.get(card_id)
