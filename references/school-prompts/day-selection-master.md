@@ -55,7 +55,7 @@ avoid:
 supporting_evidence:
 warnings:
 score_or_ranking_if_applicable:
-citations:      # 必填。[DTS-0142, ZPZQ-0007]；确无可引则写 no_classical_basis
+citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
 citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
 confidence:
 recommended_wording:
