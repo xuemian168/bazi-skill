@@ -25,8 +25,11 @@ The chart facts, JSON, candidate tables, and report data are CONFIRMED BY USER -
 3. Are health, investment, legal, medical, relationship, and safety caveats present where needed?
 4. If JSON: does it match `AnalysisResult` contract and validator requirements?
 5. If report: does it include metadata, AI boundary note, and source-alignment QA requirement?
-6. Is wording culturally framed and non-deterministic?
-7. Are uncertainties and evidence gaps preserved rather than hidden?
+6. If report: does it have a 依据索引 section, does every structural claim in the body
+   appear there, and are no-basis sections explicitly annotated as
+   「无典籍条文支撑」?
+7. Is wording culturally framed and non-deterministic?
+8. Are uncertainties and evidence gaps preserved rather than hidden?
 
 ## Forbidden
 

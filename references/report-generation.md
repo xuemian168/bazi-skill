@@ -40,6 +40,33 @@ Use a professional report structure:
 
 For 合盘 reports, replace individual deep sections with relationship dynamics, complementarity, friction matrix, timing synchronization, advice, and caveats. For 择时报表, center the report on ranked candidate windows, score components, avoid windows, and practical submission schedule.
 
+## 依据索引（固定章节）
+
+每份使用典籍条文的报告，末尾必须有「依据索引」章节：
+
+```markdown
+## 依据索引
+
+| 卡片ID | 典籍出处 | 原文 | 本盘适用理由 |
+|---|---|---|---|
+| DTS-0142 | 滴天髓·通神论·衰旺 | 能知衰旺之真机，其于三命之奥，思过半矣。 | 本造月令为寅，藏干齐备，满足该条前提 |
+```
+
+规则：
+
+- **正文不带角标。** 中文报告行内堆角标可读性差，且容易退化成本 skill 明令禁止的
+  装饰性引用。可追溯性由尾注承担。
+- 正文每个结构性论断必须能在依据索引中找到对应行。
+- 无典籍支撑的段落（如象法推演）在该段落末尾单独注明
+  「该部分为象法推演，无典籍条文支撑」，不进入依据索引表。
+- 组稿完成后运行：
+
+  ```bash
+  python3 scripts/validate_citations.py --answer report.md --classics-root references/classics
+  ```
+
+  它会检查正文出现的每个卡片 ID 都在依据索引中，且索引中没有不存在的卡片。
+
 ## Output Routes
 
 Supported routes:
@@ -67,3 +94,5 @@ Before delivering a report:
 - Check no section contains uncomputed GanZhi, Zi Wei stars, compatibility relations, or timing facts invented during narrative writing.
 - Confirm metadata and AI boundary notes are present.
 - Preserve the source JSON alongside the report spec when a reproducible report deliverable is requested.
+- Confirm the report has a 依据索引 section covering every structural claim, and that
+  `validate_citations.py --answer` passes on the composed report.
