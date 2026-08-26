@@ -2953,12 +2953,16 @@ git commit -m "docs(classics): add index routing and seven topic card files"
 - Modify: `references/school-prompts/ziwei-master.md`
 - Modify: `references/school-prompts/day-selection-master.md`
 - Modify: `references/school-prompts/compatibility-master.md`
+- Modify: `references/classics/index.md`（新增 `citation_fit` 格式说明章节；
+  见下方 review-round 修订）
 - Test: `tests/test_prompt_contract.py`
 
 **Interfaces:**
 - Consumes: `references/classics/index.md`（Task 8）
 - Produces: 每个 master 的 `Output Shape` 含 `citations:` 与 `citation_fit:`；
-  有典籍支撑的四个 master 的 Knowledge Slice 指向 `references/classics/index.md`
+  有典籍支撑的四个 master 的 Knowledge Slice 指向 `references/classics/index.md`，
+  该文件同时是 `citation_fit` 缩进/行首格式规则的唯一权威说明（单一来源，
+  四个 master 只留短指针 + 两行示例，不再各自复述完整格式解释）
 
 - [ ] **Step 1: 写失败的测试**
 
@@ -3047,9 +3051,13 @@ Expected: FAIL —— `ziping-pattern-master missing citations field`
 `confidence:` 之前插入两行：
 
 ```text
-citations:      # 必填。[DTS-0142, ZPZQ-0007]；确无可引则写 no_classical_basis
+citations:      # 必填。逗号分隔的卡片 ID，如 <卡片ID>；确无可引则写 no_classical_basis
 citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适用于本盘
 ```
+
+（`<卡片ID>` 是占位符，不是真实 ID —— 见下方 review-round 修订 Minor #2：
+最初写的示例 `[DTS-0142, ZPZQ-0007]` 形似真实卡片 ID 却在任何卡片库中都不
+存在，若被近似复述会被 `checks_answer.py` 判定为「引用了不存在的卡片」。）
 
 对**有典籍支撑的四个** master（`ziping-pattern-master`、`strength-balance-master`、
 `tiaohou-season-master`、`shensha-support-master`），在 `## Knowledge Slice` 段末追加：
@@ -3058,8 +3066,17 @@ citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适�
 典籍条文见 `references/classics/index.md`。按「流派 → 主题」表只读本流派对应的
 `cards/NN-*.md`；不要通读 `corpus/`，需要原文时用
 `python3 scripts/search_classics.py "<关键词>" --corpus` 定位。
-每条引用必须带卡片 ID，并在 `citation_fit` 中逐条对上该卡的「适用前提」。
+每条引用必须带卡片 ID，并在 `citation_fit` 中逐条对上该卡的「适用前提」；
+`citation_fit` 的格式要求见 `references/classics/index.md`。例如：
 ```
+（后接一个 ```text 围栏代码块，内容为两行：`citation_fit:`，然后缩进两格的
+`DTS-0001 — 月令与藏干齐备，符合该条适用前提`；此处不在计划文档里嵌套围栏，
+实际文件内容以 master `.md` 源文件为准。）
+
+（`citation_fit` 缩进/行首格式规则的完整解释只写在
+`references/classics/index.md` 的新增「`citation_fit` 格式」章节里 ——
+四个 master 只留上面这段短指针 + 两行示例，不再各自复述完整解释；见下方
+review-round 修订 Minor #1。）
 
 对 `ziping-pattern-master.md`，在 `## Method Checklist` 第 3 条之后插入一条：
 
@@ -3069,13 +3086,20 @@ citation_fit:   # 每个被引 ID 一行，行首为该 ID，说明它为何适�
 ```
 
 对 `shensha-support-master.md`，把现有的「full BaZi ShenSha calculation is not
-currently a source-of-truth feature」一段之后补一句，反映本期升级：
+currently a source-of-truth feature」一段之后补一句：
 
 ```markdown
-三命通会神煞篇条文已入卡片库（`cards/60-shensha.md`），神煞解释因此有条文支撑；
-但神煞的**计算**仍不是 source-of-truth —— 不得自行推算神煞落宫，只能解释
-evidence packet 中已给出的神煞项。
+三命通会神煞篇已规划纳入卡片库（`cards/60-shensha.md`）；该文件本期为占位，
+尚无可引卡片，因此神煞解释在卡片就绪前应写 `citations: no_classical_basis`
+—— 这是合规默认，不是缺陷。神煞的**计算**仍不是 source-of-truth —— 不得
+自行推算神煞落宫，只能解释 evidence packet 中已给出的神煞项。
 ```
+
+（原始草稿写的是「三命通会神煞篇条文已入卡片库……神煞解释因此有条文支撑」——
+`cards/60-shensha.md` 当时、现在都只是占位文件，没有真实卡片；那句话会诱导
+persona 去搜一个不存在的引用，或更糟——为了满足这句「已有支撑」的断言而
+编造引用。`no_classical_basis` 本是零代价的合规默认，这个措辞反而制造了
+伪造引用的压力。已在 review round 中改为条件式，见下方 Important #2。）
 
 对 `xiangfa-blind-master.md`，把 Knowledge Slice 第一条改写为：
 
@@ -3096,14 +3120,49 @@ evidence packet 中已给出的神煞项。
 对 `compatibility-master.md`，在 Knowledge Slice 段末追加：
 
 ```markdown
-合盘无专门古籍，本期 `citations` 一律 `no_classical_basis`；引用十神、旺衰等
-通用条文时可带对应卡片 ID，但不得声称存在「合盘专书」依据。
+合盘无专门古籍，`citations` 默认 `no_classical_basis`；仅当引用十神、旺衰等
+通用条文对应的卡片时才可改写为具体卡片 ID —— 二者只能二选一，同一次输出中
+不得同时出现 `no_classical_basis` 与卡片 ID。不得声称存在「合盘专书」依据。
+如需定位可引卡片，见 `references/classics/index.md`「流派 → 主题」表中
+十神、运岁对应的 `cards/40-shishen.md`、`cards/70-yunsui.md`，或用
+`python3 scripts/search_classics.py "<关键词>"` 检索。
 ```
+
+（原始草稿写的是「本期 `citations` **一律** `no_classical_basis`；引用……
+时可带对应卡片 ID」—— 同一句话里先说「一律无引用」又说「可以带引用 ID」，
+真按字面输出会同时出现两者，被 `checks_answer.py` 判定
+`citations 中同时出现引用 ID 与 no_classical_basis，请二选一`；而且原句
+也没给出任何路由指针，persona 想合规引用时无处可查。已在 review round 中
+改为「默认 no_classical_basis、二选一、附路由指针」，见下方 Important #1。）
+
+`references/classics/index.md`（Task 8 产出，本任务经二次授权追加修订）在
+「`原文`……」段落之后新增一节：
+
+````markdown
+## `citation_fit` 格式
+
+`citation_fit` 每条说明必须让卡片 ID 位于行首，否则 `checks_answer.py`
+无法提取该 ID，会误报「缺少对应的 citation_fit 说明」。两种写法均可：
+
+- 缩进后单独成行，ID 在行首：
+  ```text
+  citation_fit:
+    DTS-0001 — 月令与藏干齐备，符合该条适用前提
+  ```
+- 与 `citation_fit:` 写在同一行：
+  ```text
+  citation_fit: DTS-0001 — 月令与藏干齐备，符合该条适用前提
+  ```
+
+不缩进的独立行、或说明文字先于 ID 出现（如「关于 DTS-0001 的理由」），
+脚本都无法提取该 ID。
+````
 
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `cd /Users/xuemian/SynologyDrive/QUT/bazi-skill && python3 -m unittest discover -s tests -t . -v`
-Expected: PASS，78 tests
+Expected: PASS，108 tests（brief 原写 78 是旧计数；Task 1-8 的复审过程中
+陆续新增了测试，108 是 Task 9 完成、含其自身 6 条新测试后的实际总数）
 
 - [ ] **Step 5: 提交**
 
@@ -3112,6 +3171,75 @@ cd /Users/xuemian/SynologyDrive/QUT/bazi-skill
 git add references/school-prompts tests/test_prompt_contract.py
 git commit -m "feat(prompts): require citations and citation_fit in every master output"
 ```
+
+### Post-review correction of Task 9's citation contract (2026-08-26)
+
+A review of Task 9's first commit found two Important defects, both copied
+verbatim from this plan's own Step 3 text, and both landing in the exact
+failure mode the whole feature exists to prevent — a master persona either
+fabricating a citation or being unable to comply with its own instructions.
+Two Minor findings were folded into the same fix round. Four edits total,
+one commit.
+
+1. **Important — `compatibility-master.md` was self-contradictory and
+   unroutable.** The appended paragraph asserted `citations` is *always*
+   `no_classical_basis` while permitting real card IDs in the same
+   sentence. Building the literal-compliance output and running it through
+   `validate_citations.py --answer` confirmed the validator rejects the
+   mix: `` `citations` 中同时出现引用 ID 与 no_classical_basis，请二选一 ``.
+   It also contradicted `references/classics/index.md`'s own 合盘 row
+   (「无 —— 无专书」, not 「一律」), and — unlike the four classics-backed
+   masters — gave no routing pointer at all, so a persona acting on the
+   permission clause had no way to find a valid ID. Fixed: `一律` →
+   `默认`, explicit two-choice-not-both wording, and a routing pointer to
+   `references/classics/index.md`'s 十神/运岁 cards and
+   `search_classics.py`.
+2. **Important — `shensha-support-master.md` asserted a basis that does
+   not exist.** The appended sentence said 三命通会神煞篇条文「已入卡片库」
+   (already in the card library). `references/classics/cards/60-shensha.md`
+   is, and was at the time, a placeholder with the single line
+   `本期尚无卡片`. A persona told a citable basis already exists would
+   either search fruitlessly or fabricate a citation to satisfy the
+   stated premise — exactly the pressure `no_classical_basis` (zero
+   penalty, fully legitimate) exists to remove. Fixed: reframed to
+   future/conditional (「已规划纳入」/「该文件本期为占位」) and states
+   plainly that `citations: no_classical_basis` is the correct, compliant
+   default until the card lands. The calculation caveat that followed
+   (神煞的计算仍不是 source-of-truth) was kept unchanged — only the
+   support claim was wrong.
+3. **Minor — de-duplicated the `citation_fit` format contract.** The
+   accepted/rejected-shape explanation (added beyond this plan's original
+   Step 3 text to satisfy the "must show a parser-verified example"
+   requirement) was duplicated verbatim across all four classics-backed
+   masters — ~9 lines × 4 files that would all need to change together if
+   the parser's accepted shapes ever changed. Moved the full explanation
+   into `references/classics/index.md` (a new `` `citation_fit` 格式 ``
+   section, which all four masters already route to — no extra file
+   read), leaving each master a one-line pointer plus the same two-line
+   worked example.
+4. **Minor — placeholder IDs in the `Output Shape` template looked like
+   real cards.** `[DTS-0142, ZPZQ-0007]` matches the `[A-Z]{3,4}-\d{4}`
+   card-id shape but exists in no card file; an echoed-near-verbatim
+   template line would be extracted by `CARD_ID` and reported as
+   `引用了不存在的卡片`. Replaced with `<卡片ID>` (a placeholder token
+   `[A-Z]{3,4}-\d{4}` cannot match) across all eight master files.
+
+`ziping-pattern-master.md`'s `3b.` not being a valid CommonMark ordered-list
+marker was raised in the same review but left as-is — cosmetic, recorded
+for the final whole-branch review rather than fixed piecemeal here.
+
+Re-verified after the fix: full suite still 108/108; the exact
+`compatibility-master` and `shensha-support-master` shapes documented
+above (`no_classical_basis` alone, a lone card id, and the two mixed
+together) were each round-tripped through
+`scripts/validate_citations.py --answer - --classics-root tests/fixtures`
+and matched the behaviour asserted in the fixed prose — including the
+mixed-basis case reproducing the exact `请二选一` error that motivated
+the fix.
+
+Committed together with this doc sync as a single commit (staged:
+the eight `references/school-prompts/*.md` files,
+`references/classics/index.md`, and this plan file).
 
 ---
 
