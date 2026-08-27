@@ -11,6 +11,8 @@ Report generation is a presentation layer. Code must calculate and provide:
 - BaZi four pillars, Da Yun, true-solar-time mode, boundary warnings, and lunar/solar conversion metadata.
 - `AnalysisResult` timeline and eight-dimension interpretation JSON.
 - Zi Wei palaces, stars, Si Hua, Da Xian, and pattern evidence if included.
+- Western astrology placements, houses, aspects, synastry, composite, or transit facts if included.
+- NaYin labels, branch/stem relation matrices, Qi Men plates, Liu Yao hexagrams, or other common-school facts if included.
 - Compatibility matrices and pair-level scores if the report is 合盘/合婚.
 - Auspicious-timing candidate day/hour pillars, feature labels, and ranking inputs if the report is 择日/择时.
 
@@ -21,7 +23,7 @@ AI may write narrative summaries and section prose, but it must not calculate, v
 Before composing a report, assemble a report data object with:
 
 - `reportTitle`, `subjectName`, `lang`, `generatedAt`, and report type (`natal`, `compatibility`, `auspicious-timing`, or `mixed`).
-- Confirmed chart facts: `BaZiResult`, `AnalysisResult`, optional computed Zi Wei facts, optional compatibility result, optional auspicious-timing result.
+- Confirmed chart facts: `BaZiResult`, `AnalysisResult`, optional computed Zi Wei facts, optional computed or user-confirmed Western astrology facts, optional common-school facts, optional compatibility result, optional auspicious-timing result.
 - Computation metadata: library names and versions, true-solar-time mode, longitude, timezone, equation-of-time use, and whether boundary-hour ambiguity exists.
 - Source caveat: cultural/reflective analysis only; not deterministic medical, legal, financial, or relationship advice.
 - If the input is an `AnalysisResult`, run `scripts/validate_analysis_result.py` before report composition.
@@ -35,7 +37,7 @@ Use a professional report structure:
 3. Computed chart facts: four-pillar table, true-solar-time note, lunar date, Da Yun start age/direction.
 4. Visual summary specification: K-line chart notes, score cards, Da Yun timeline, and selected important years.
 5. Deep sections: investment, personality, career, wealth, feng shui/environment, relationship, health tendency, family/support.
-6. Optional modules: Zi Wei summary, compatibility report, auspicious timing table, manuscript-submission timing notes.
+6. Optional modules: Zi Wei summary, Western astrology/zodiac cross-check, common-school cross-check, compatibility report, auspicious timing table, manuscript-submission timing notes, one-question divination note.
 7. Appendix: calculation method, AI boundary, disclaimer, and raw key facts used for interpretation.
 
 For 合盘 reports, replace individual deep sections with relationship dynamics, complementarity, friction matrix, timing synchronization, advice, and caveats. For 择时报表, center the report on ranked candidate windows, score components, avoid windows, and practical submission schedule.
@@ -57,8 +59,11 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
 - **正文不带角标。** 中文报告行内堆角标可读性差，且容易退化成本 skill 明令禁止的
   装饰性引用。可追溯性由尾注承担。
 - 正文每个结构性论断必须能在依据索引中找到对应行。
-- 无典籍支撑的段落（如象法推演）在该段落末尾单独注明
-  「该部分为象法推演，无典籍条文支撑」，不进入依据索引表。
+- 无典籍卡片支撑的段落在该段落末尾单独注明，不进入依据索引表。注明须写清该段
+  实际靠什么成立，而不是笼统说它没有依据。象法段落的写法是
+  「该部分依据 `xiangfa-system` 规则切片（rule_id 见象法 master 输出的
+  `used_rules`），无典籍条文支撑」—— 规则切片带溯源但未做逐字原文核验，
+  故不进依据索引；确实两者都没有的段落才写「无典籍条文支撑」。
 - 组稿完成后运行（当前工作目录通常是宿主项目而非 skill 目录，故脚本与
   `references/` 用完整安装路径，`report.md` 相对宿主项目工作目录解析）：
 
@@ -68,7 +73,7 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
 
   它会检查正文出现的每个卡片 ID 都在依据索引中，且索引中没有不存在的卡片。
   它**不检查**「正文每个结构性论断都有对应索引行」—— 正文不带角标意味着正文里
-  按定义没有卡片 ID，这条覆盖关系无法机械判定，只能由裁判与作者执行。
+  按定义没有卡片 ID，这条覆盖关系无法机械判定，只能由主理官与作者执行。
 - **依据索引不得空表通过。** 依据索引一条卡片都没列出时，报告必须二选一：写出
   `citations:` 字段（无可引则写 `no_classical_basis`），或在相应段落写明
   「无典籍条文支撑」。校验器会强制这一条 —— 报告免写 `citations:` 的前提正是
@@ -79,7 +84,7 @@ For 合盘 reports, replace individual deep sections with relationship dynamics,
   校验器仍会照常检查其内容。
 - 若依据索引列出的卡片中有两张互为「竞合」，须在依据索引章节内追加一行
   `rival_resolution: <采纳ID> over <落选ID> — <理由>`，记录取舍依据；这是
-  裁判在校勘中的取舍，报告读者应当能看到，不应只存在于裁判的工作记录中。
+  主理官在校勘中的取舍，报告读者应当能看到，不应只存在于主理官的工作记录中。
   校验器会在这种情况下强制要求该行存在。
 
 ## Output Routes
@@ -106,7 +111,7 @@ Before delivering a report:
 
 - Confirm the source JSON passed `validate_analysis_result.py` when applicable.
 - Confirm report facts match source data: four pillars, start age, Da Yun, peak year, scores, and timing windows.
-- Check no section contains uncomputed GanZhi, Zi Wei stars, compatibility relations, or timing facts invented during narrative writing.
+- Check no section contains uncomputed GanZhi, Zi Wei stars, Western astrology placements/aspects/transits, NaYin labels, branch/stem relations, Qi Men plates, Liu Yao hexagrams, compatibility relations, or timing facts invented during narrative writing.
 - Confirm metadata and AI boundary notes are present.
 - Preserve the source JSON alongside the report spec when a reproducible report deliverable is requested.
 - Confirm the report has a 依据索引 section covering every structural claim, and that

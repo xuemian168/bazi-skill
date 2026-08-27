@@ -77,7 +77,7 @@ Ten gods are computed relative to the day stem:
 | Target controls day master | 七杀 | 正官 |
 | Target generates day master | 偏印 | 正印 |
 
-K-line analysis dimensions can map ten gods to themes:
+K-line dimensions can map ten gods to themes:
 
 - 比劫: peers, competition, self-drive.
 - 食伤: expression, output, skill, children themes.

@@ -36,9 +36,22 @@ Zi Wei note: do not assume `services/ziweiService.ts`, `components/ZiWeiChartPan
 
 `ProfessionalInput` accepts user-entered pillars and optional `birthYear`, `startAge`, `direction`, `daYun`. In this mode, the app builds a pseudo `UserInput` for compatibility. Do not infer that pseudo `birthDate`, `birthTime`, or longitude are real birth facts.
 
+## Birthplace Precision Contract
+
+Birthplace precision is controlled by `longitude`, not by the display string in `birthLocation`.
+
+Recommended tiers:
+
+- Default: city-level lookup is acceptable if it resolves to a numeric longitude.
+- Precision: district/county/township, hospital, or map-selected point should be used when available.
+- Professional: allow manual longitude and timezone/solar-time mode for boundary-hour or report-grade work.
+
+`birthLocation` should remain user-facing provenance such as "Hangzhou" or "Hangzhou, Zhejiang". `longitude` must be stored as the source-of-truth calculation value. A longitude difference of 1 degree equals 4 minutes of solar-time correction, so city-level lookup is usually enough unless the birth time is close to a two-hour branch boundary.
+
 ## Calculation Contract
 
 - Lunar input is converted to solar with `Lunar.fromYmd(...).getSolar()` before true solar time.
+- True-solar-time correction uses the numeric `longitude`; do not derive calculation precision from the text granularity of `birthLocation`.
 - Current app mode uses a legacy longitude-only correction: `(longitude - 120) * 4` minutes added to clock time. Treat this as compatibility behavior, not full astronomical apparent solar time.
 - Strict apparent solar time requires timezone-standard-meridian correction plus equation of time. See `references/true-solar-time.md`.
 - Four pillars come from `lunar.getEightChar()`: `getYearGan/Zhi`, `getMonthGan/Zhi`, `getDayGan/Zhi`, `getTimeGan/Zhi`.
@@ -57,6 +70,8 @@ Code owns all deterministic astrology/calendar facts:
 - Da Yun direction, start age, and pillars.
 - Liu Nian / candidate day / candidate hour GanZhi.
 - Zi Wei palaces, stars, Da Xian, and pattern evidence only if a tracked implementation or supplied evidence packet computes them.
+- Western astrology placements, houses, aspects, transits, synastry, and composite facts only if a tracked implementation or supplied evidence packet computes them.
+- NaYin labels, branch/stem relation matrices, Qi Men plates, Liu Yao hexagrams, Mei Hua numbers/hexagrams, and Da Liu Ren plates only if a tracked implementation or supplied evidence packet computes them.
 - Compatibility feature matrices.
 - Auspicious timing candidate pillars and branch/stem relations.
 
@@ -76,6 +91,7 @@ If implementing strict true solar time:
 
 - Add `solarTimeMode` with values like `legacy-cn-meridian`, `local-mean-solar`, and `strict-apparent-solar`.
 - Add `timezoneOffsetMinutes` or an IANA timezone identifier to normal-mode inputs.
+- Add optional `locationPrecision` metadata such as `city`, `district`, `township`, `map-point`, or `manual-longitude`.
 - Include `solarTimeMode` and timezone data in cache keys because they can change the hour pillar and analysis.
 - Return a structured `SolarTimeResult` with longitude correction, equation-of-time correction, total offset, and boundary warning.
 - Show both hour-pillar possibilities when adjusted time is near a two-hour boundary or strict and legacy modes disagree.
@@ -215,7 +231,7 @@ Do not reuse `AnalysisResult` for two-person compatibility. Add a pair-level con
 
 ## Report Artifact Contract
 
-Professional reports are presentation artifacts over computed data. They may include `BaZiResult`, `AnalysisResult`, optional computed Zi Wei output, compatibility output, or auspicious-timing output, but must not trigger fresh AI calculation or let AI invent deterministic facts during report composition.
+Professional reports are presentation artifacts over computed data. They may include `BaZiResult`, `AnalysisResult`, optional computed Zi Wei output, optional computed or user-confirmed Western astrology output, optional common-school output, compatibility output, or auspicious-timing output, but must not trigger fresh AI calculation or let AI invent deterministic facts during report composition.
 
 Current scope excludes PDF export and offline PDF rendering. Keep reports as structured text, Markdown, or HTML-style content unless the user explicitly asks to reintroduce a PDF feature later.
 
@@ -231,7 +247,7 @@ For report composition:
 Always include:
 
 - "Input Data (CONFIRMED BY USER - DO NOT RECALCULATE, USE AS TRUTH)"
-- "The BaZi chart, Da Yun, annual/day/hour pillars, and other calendar facts were computed by code. Interpret these facts only."
+- "The BaZi chart, Da Yun, annual/day/hour pillars, optional Western astrology facts, optional common-school facts, and other calendar/chart facts were computed by code or confirmed by the user. Interpret these facts only."
 - Exact 100-year timeline requirements.
 - Valid JSON only.
 - Language instruction for `zh` or `en`.
@@ -240,6 +256,6 @@ Always include:
 Avoid:
 
 - Asking the model to recalculate the chart from birth data after the user has confirmed it.
-- Asking the model to invent Liu Nian, day/hour GanZhi, Zi Wei stars, Da Yun, or compatibility relations.
+- Asking the model to invent Liu Nian, day/hour GanZhi, Zi Wei stars, Western astrology placements/aspects/transits, NaYin labels, branch/stem relations, Qi Men plates, Liu Yao hexagrams, Da Yun, or compatibility relations.
 - Adding fields that the frontend does not render or validate.
 - Replacing deterministic local calculations with AI-generated pillars.

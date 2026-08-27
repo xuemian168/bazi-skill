@@ -458,7 +458,7 @@ class ReportCitationsFieldOptionalTest(unittest.TestCase):
 
     def test_report_without_citations_field_still_requires_rival_resolution(self):
         # Adjudication between competing cards must stay visible in the
-        # report itself, not only in the referee's working notes — this
+        # report itself, not only in the orchestrator's working notes — this
         # must not become reachable by simply not writing citations:.
         text = textwrap.dedent(
             """\
@@ -475,7 +475,7 @@ class ReportCitationsFieldOptionalTest(unittest.TestCase):
         self.assertTrue(any("rival_resolution" in e for e in errors), errors)
 
     def test_non_report_without_citations_field_is_still_rejected(self):
-        # The non-report path (master/referee output) is untouched: no
+        # The non-report path (master/orchestrator output) is untouched: no
         # 依据索引 heading means citations: is still mandatory.
         errors = check_answer(parse_answer("school: x\n"), LIBRARY)
         self.assertTrue(

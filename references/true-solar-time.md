@@ -28,6 +28,24 @@ Important limitation:
 - For non-China locations, a fixed `120°E` standard meridian is not a general local-civil-time conversion.
 - Strict global handling needs the event or birth timezone.
 
+## Birthplace Precision
+
+For the current project, birthplace text is not the precision boundary. The numeric longitude is.
+
+Recommended UX tiers:
+
+- City-level default: select a city and use its center longitude. This is acceptable for most non-boundary births.
+- Precise location: use district/county/township, hospital, or map-selected point when the user can provide it.
+- Professional mode: allow manual longitude, timezone, and solar-time mode.
+
+Solar-time sensitivity:
+
+- Longitude difference of `1°` changes solar time by `4 minutes`.
+- Longitude difference of `0.25°` changes solar time by `1 minute`.
+- City-level longitude is usually sufficient unless the adjusted birth time is near a two-hour branch boundary.
+
+If location precision is low and the adjusted time is within the boundary warning window, mark the hour pillar as ambiguous and ask for a more precise location or manual longitude.
+
 ## Strict Apparent Solar Time
 
 Use this formula when strict mode is requested:
@@ -96,6 +114,7 @@ export type SolarTimeMode =
 export interface SolarTimeOptions {
   mode: SolarTimeMode;
   longitude: number;
+  locationPrecision?: 'city' | 'district' | 'township' | 'map-point' | 'manual-longitude';
   timezoneOffsetMinutes?: number; // actual UTC offset at that date, east positive
   boundaryWindowMinutes?: number;  // default 15
 }
