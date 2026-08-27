@@ -22,6 +22,11 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
    - Compatibility or synastry analysis, 合盘, 合婚, 伴侣匹配, relationship fit, or partnership matching: read `references/compatibility-analysis.md`, plus `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Auspicious date/hour selection, 吉日吉时, 择日, or 择时: read `references/auspicious-timing.md` and `references/analysis-methods.md`; if the task is also app implementation, read `references/project-contracts.md`.
    - Professional report, 命理研报, structured report, Markdown report, or HTML report workflow: read `references/report-generation.md` and `references/project-contracts.md`; if using an `AnalysisResult`, validate the JSON before composing the report.
+   - 古籍条文、典籍引用、条文出处、引用核对，或需要为判断补依据: read
+     `references/classics/index.md`, then only the topic card files your school needs;
+     verify with `scripts/validate_citations.py`; locate raw source text with
+     `scripts/search_classics.py --corpus`. Never read `references/classics/corpus/`
+     end to end.
 
 2. Apply an information-completeness gate before analysis, JSON generation, report rendering, or multi-agent work:
    - If required user information is missing, ask follow-up questions before proceeding. Do not guess birth facts, chart facts, event constraints, relationship counterpart data, or report scope.
@@ -54,7 +59,7 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 3. If the planner identifies blocking missing facts, ask the user or compute them with deterministic code before dispatching masters.
 4. Load `references/school-prompts/index.md`, then load only the selected masters from the planner output.
 5. Require each selected master to return school-specific thesis, evidence, risks, confidence, and recommended wording. Masters may not recalculate chart facts.
-6. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > task-specific method fit > cross-school consensus > narrative preference.
+6. Compare school disagreements explicitly; resolve by source hierarchy: code facts > project contract > 典籍条文（`核心论断`/`操作规则`）> task-specific method fit > 典籍条文（`例证`）> cross-school consensus > narrative preference — classics are deliberately split into two tiers around method fit, not collapsed into one (full hierarchy and rationale: `references/agent-roles.md`, `references/school-prompts/orchestrator.md`).
 7. The orchestrator synthesizes the final answer, JSON, or report. Do not average school scores mechanically.
 8. Validate final artifacts with deterministic scripts before treating them as ready.
 
@@ -145,8 +150,18 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 - `references/xiangfa-system/`: source map, coverage map, and local rule slices for source-bounded 盲派象法 / 象法 scene language.
 - `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the orchestrator and each school master.
 - `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
+- `references/classics/index.md`: 古籍知识层入口，三向路由、卡片契约、层级定义与引用规范。
+- `scripts/validate_citations.py`: 卡片库自检（`--cards`）与答案/报告引用校验（`--answer`）。
+- `scripts/search_classics.py`: 零依赖检索，卡片优先、原文回落。
 
 ## Useful Commands
+
+These commands assume the current working directory is an arbitrary host
+project, not the skill's own directory: script paths and the skill's own
+`references/` paths always use the full install path
+`${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`; user-supplied data files
+(`result.json`, `answer.md`) resolve relative to that host-project working
+directory.
 
 Validate a JSON file:
 
@@ -158,4 +173,23 @@ Validate stdin with an explicit birth year:
 
 ```bash
 cat result.json | python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_analysis_result.py" --birth-year 1990 -
+```
+
+校验卡片库：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```
+
+校验一份 master 输出或报告的引用使用：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer answer.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```
+
+检索条文：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "衰旺真机" --school 旺衰扶抑 --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "余寒犹存" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
 ```
