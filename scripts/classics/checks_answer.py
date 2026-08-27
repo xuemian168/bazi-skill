@@ -1,11 +1,11 @@
 """Mode B: verify how an answer uses classics citations (spec 9.1).
 
-Input is the `key: value` text block that school masters and the referee
+Input is the `key: value` text block that school masters and the orchestrator
 already emit, or a report containing a 依据索引 section.
 
 「孤证不立」is deliberately NOT checked here: classifying a claim as
 event-level is not reliably possible from free text, and a check that
-silently misses cases is worse than no check. It stays a referee prompt
+silently misses cases is worse than no check. It stays an orchestrator prompt
 rule (spec 8.2 item 4).
 """
 

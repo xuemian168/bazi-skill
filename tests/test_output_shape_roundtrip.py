@@ -159,7 +159,11 @@ class OutputShapeRoundTripTest(unittest.TestCase):
         # every test below would pass vacuously.
         names = [name for name, _ in prompts_with_citations()]
         self.assertEqual(len(names), 9, names)
-        self.assertIn("referee.md", names)
+        # The synthesis role's own output is validated by the same command
+        # it runs over every master output, so its Output Shape must carry
+        # the citation fields too. It is `orchestrator.md` since the
+        # referee -> orchestrator rename.
+        self.assertIn("orchestrator.md", names)
         self.assertIn("compatibility-master.md", names)
 
     def test_output_shape_filled_with_a_real_citation_validates(self):

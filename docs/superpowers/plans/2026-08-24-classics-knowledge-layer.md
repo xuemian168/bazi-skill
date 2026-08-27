@@ -10,6 +10,14 @@
 
 **Spec:** `docs/superpowers/specs/2026-08-24-classics-knowledge-layer-design.md`
 
+> **命名注记（2026-08-27 合并 `origin/main` 时补）：** 本计划执行期间该角色叫
+> 「裁判 / referee」，涉及 `references/school-prompts/referee.md` 与
+> `tests/test_referee_contract.py`。上游随后统一改名为「主理官 / orchestrator」，
+> 两者分别成为 `references/school-prompts/orchestrator.md` 与
+> `tests/test_orchestrator_contract.py`。本文正文按执行当时的原貌保留 —— 其中的
+> 提交信息与文件名对应真实的 git 历史，改写会让它与 `git log` 不符 —— 阅读时按
+> 上述对应关系换算即可。
+
 **范围:** 本计划覆盖 Spec 第 4、5、6、8、9 章与第 11 章 Phase 1。
 Spec Phase 2（语料入库）与 Phase 3/4（卡片编纂与回归）各自另立计划。
 

@@ -5,6 +5,13 @@
 - 影响范围：`references/`、`scripts/`、`SKILL.md`、`README.md`
 - 不影响：宿主项目应用代码（前端/后端）
 
+> **命名注记（2026-08-27 合并 `origin/main` 时补）：** 本文写作时该角色叫「裁判 /
+> referee」，提示词文件是 `references/school-prompts/referee.md`。上游随后把该角色
+> 统一改名为「主理官 / orchestrator」，文件改为 `references/school-prompts/orchestrator.md`，
+> 并在其前面插入了 `orchestrator-planner` 规划阶段。本文正文按当时的原貌保留 ——
+> 它记录的是 2026-08-24 的决策，其中的提交信息与文件名对应真实的 git 历史 ——
+> 阅读时把「裁判 / referee.md」按上述对应关系读作「主理官 / orchestrator.md」即可。
+
 ---
 
 ## 1. 背景与问题

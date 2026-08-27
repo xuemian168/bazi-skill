@@ -63,7 +63,7 @@ class InstallPathContractTest(unittest.TestCase):
     """SKILL.md declares the invariant that script and `references/` paths
     inside commands *always* use the full install path, because the working
     directory is an arbitrary host project. Thirteen commands under
-    `references/` — including the referee's own duty-1 enforcement command —
+    `references/` — including the orchestrator's own duty-1 enforcement command —
     used the bare `python3 scripts/...` form and simply did not run from a
     host-project cwd. This scans the shipped docs instead of trusting them."""
 
