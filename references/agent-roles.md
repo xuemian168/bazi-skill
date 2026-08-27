@@ -30,12 +30,23 @@ The orchestrator / 主理官 owns the final workflow:
 
 The orchestrator is not a vote counter. If schools disagree, decide by evidence quality and source hierarchy:
 
-1. Code-computed chart facts and validated JSON.
-2. Project contract and schema.
-3. Task-specific method fit.
-4. Cross-school consensus.
-5. Single-school interpretation.
-6. Wording preference.
+1. code facts
+2. project contract
+3. 典籍条文（`核心论断` / `操作规则` 级）
+4. task-specific method fit
+5. 典籍条文（`例证` 级）
+6. cross-school consensus
+7. narrative preference
+
+典籍刻意拆成两档插在方法适配的两侧：核心论断压过方法适配，例证级低于方法适配。
+这是为了避免退化成「引了本书就赢」。`存疑` 级条文不进入源层级，只能作
+「另有一说」提示。
+
+`references/xiangfa-system/source-map.md` 另有一份五级顺序，那份只界定象法这一门
+可以取用什么，与上表是嵌套关系而非并列的第二套裁定顺序。xiangfa-system 的规则切片
+是本项目自行蒸馏、带 `source_basis` 溯源但未做逐字原文核验的条目，因此整体落在上表
+第 2 级（project contract / 项目参考）这一层，不进入任何一档「典籍条文」——
+那两档只收经语料核验的卡片引用。
 
 ## Evidence Packet
 

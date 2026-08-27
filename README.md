@@ -98,6 +98,8 @@ flowchart TD
     D --> E["Evidence Availability<br/>确认事实 + 缺口 + 用户约束"]
     B --> R["references/<br/>宿主合约 / 分析方法 / 象法知识库 / 常见流派 / 合盘 / 择时 / 报告"]
     R --> E
+    R --> RC["references/classics/<br/>条文卡片 + 引用契约"]
+    RC --> E
 
     E --> P["主理规划师<br/>选角色 / 选参考 / 定校验"]
     P -->|需补事实| C1
@@ -115,11 +117,15 @@ flowchart TD
     F4 --> G
     F5 --> G
     F6 --> G
+    G -.->|"search_classics.py --corpus<br/>仅供核对引文，不入证据包"| RCC["corpus/<br/>精选原文底库"]
 
     G --> H["结构化输出<br/>解读 / JSON / 报告规格"]
     H --> I["脚本校验<br/>validate_analysis_result.py"]
+    H --> IC["脚本校验<br/>validate_citations.py"]
     I -->|通过| J["报告组稿<br/>结构化 / Markdown / HTML"]
+    IC -->|通过| J
     I -->|失败| G
+    IC -->|失败| G
     J --> K["最终交付<br/>专业报告 / 可解释建议 / 合约有效数据"]
 ```
 
@@ -130,6 +136,9 @@ flowchart TD
 - 信息先补齐：出生信息、地点/时区、真太阳时口径、合盘双方资料、择时时间范围等关键输入缺失时，先追问，不直接猜。
 - 多流派会诊：复杂命理任务先由“主理规划师”选择角色、参考和校验步骤，再让多个主流流派“大师”分别解读，最后由“主理官”综合输出，避免简单拼接或平均分。
 - 结构先验证：`AnalysisResult`、报告 JSON 等结构化结果必须先通过脚本校验，再视为可交付。
+- 引用必须可核对：典籍条文一律通过卡片 ID 引用，原文可机械比对语料原文；
+  确无可引时显式写 `no_classical_basis`。这套机制不追求让预测更准（命理判断不可证伪），
+  而是让输出可追溯、可反驳、边界清楚。
 
 ## 主要能力
 
@@ -237,7 +246,12 @@ K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0
 - `references/`：分主题参考文档，包括项目合约、分析方法、真太阳时、紫微、星座/西洋占星、常见流派、合盘、择时、报告生成、角色分工等。
 - `references/xiangfa-system/`：象法体系的来源映射、覆盖率地图、宫位象、十神象、刑冲合害象、组合象、运年触发和安全改写规则。
 - `references/school-prompts/`：多流派大师与主理官的专属提示词和知识切片，要求证据不足时输出 `evidence_gap`，不补空白规则。
+- `references/classics/`：古籍知识层。`index.md` 三向路由、`cards/` 按命理主题分片的条文卡片、
+  `corpus/` 精选原文底库。本期 `cards/` 只有带表头的空文件，`corpus/` 为空目录 ——
+  条文卡片与语料底库（含 `corpus/PROVENANCE.md` 溯源清单）随语料入库分期落地，
+  校验链路先行可跑。
 - `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
+- `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
 
 ## Claude Code 兼容
 

@@ -1,0 +1,133 @@
+# 古籍知识层索引
+
+本目录是八字典籍条文的唯一入口。读取顺序：先读本文件路由，再只读需要的
+`cards/NN-*.md`；`corpus/` 是证据底库，**不作为阅读材料**，仅在主理官核对引文或
+master 报 `evidence_gap` 需深挖时，经 `scripts/search_classics.py` 定位。
+
+## 源政策
+
+- 排盘事实以代码计算为准。典籍条文只用于解释、比较、排序与措辞。
+- 引用必须带卡片 ID，且能通过 `scripts/validate_citations.py` 核对。
+  无卡片支撑的书名提及一律删除。
+- 确无可引条文时，写 `no_classical_basis`。这与给出真实引用同等合法，
+  不构成缺陷 —— 必填 `citations` 的目的是逼出「有没有依据」这个显式回答，
+  不是逼出引用。
+
+## 主题 → 卡片文件
+
+| 主题 | 文件 | 覆盖内容 |
+|---|---|---|
+| 月令 | `cards/10-yueling.md` | 月令司令、得时失时 |
+| 旺衰 | `cards/20-wangshuai.md` | 旺衰强弱、扶抑 |
+| 调候 | `cards/30-tiaohou.md` | 调候、寒暖燥湿 |
+| 十神 | `cards/40-shishen.md` | 十神性情与作用 |
+| 格局 | `cards/50-geju.md` | 格局成败救应 |
+| 神煞 | `cards/60-shensha.md` | 神煞 |
+| 运岁 | `cards/70-yunsui.md` | 大运流年 |
+
+## 流派 → 主题
+
+| 流派 | 应读主题 | 本期典籍支撑 |
+|---|---|---|
+| 子平格局 | 格局, 月令, 十神 | 子平真诠 |
+| 旺衰扶抑 | 旺衰, 月令 | 滴天髓 |
+| 调候 | 调候, 月令 | 穷通宝鉴 |
+| 神煞辅助 | 神煞 | 三命通会 |
+| 盲派象法 | 十神, 运岁 | 无 —— 一律 `no_classical_basis` |
+| 紫微 | 无 | 无 —— 二期（紫微斗数全书） |
+| 择日择时 | 无 | 无 —— 二期（协纪辨方书） |
+| 合盘 | 十神, 运岁 | 无 —— 无专书 |
+
+## 典籍 → 主题
+
+| 前缀 | 典籍 | 主要主题 | 语料 |
+|---|---|---|---|
+| `DTS` | 滴天髓 | 旺衰, 月令 | `corpus/ditiansui.txt` |
+| `ZPZQ` | 子平真诠 | 格局, 月令, 十神 | `corpus/ziping-zhenquan.txt` |
+| `QTBJ` | 穷通宝鉴 | 调候 | `corpus/qiongtong-baojian.txt` |
+| `SMTH` | 三命通会 | 神煞, 十神, 运岁 | `corpus/sanming-tonghui.selected.txt` |
+
+二期保留前缀，**本期使用即报错**：`YHZP` 渊海子平、`SFTK` 神峰通考、
+`ZWDS` 紫微斗数全书、`XJFF` 协纪辨方书。
+启用条件：其语料已入库并在 `corpus/PROVENANCE.md` 登记。
+
+`PROVENANCE.md` 登记不只是二期前缀的启用门槛：`validate_citations.py --cards`
+对**任何**被卡片引用的语料文件都会核对其在 `PROVENANCE.md` 中的登记与
+sha256，未登记即报错，与该前缀本期是否已启用无关（见 `checks_cards.py` 的
+`_check_provenance`）。
+
+**本期 `corpus/` 是空目录，`corpus/PROVENANCE.md` 尚未落地。** 上表的语料文件名
+是卡片编纂时必须使用的目标路径，不是已入库文件；卡片 ID 前缀与语料文件的对应
+关系由 `scripts/classics/__init__.py` 的 `PREFIX_CORPUS` 强制（前缀与语料对不上
+即报错），改动上表须同步改该常量。语料与 `PROVENANCE.md` 随 Spec Phase 2 入库；
+在此之前卡片库为空，`--cards` 报 `cards: 0` / `VALID`。
+
+## 层级与权重
+
+| 层级 | 含义 | 主理官用法 |
+|---|---|---|
+| `核心论断` | 提纲挈领的原则性主张 | 可单独支撑结构性判断；源层级高于方法适配 |
+| `操作规则` | 可直接套用的判定规则或取用口径 | 可单独支撑结构性判断 |
+| `例证` | 具体命例或举例说明 | **不可单独支撑结构性判断**；源层级低于方法适配 |
+| `存疑` | 版本歧异、语义不明或流派争议未决 | 仅作「另有一说」提示，不得作结论依据 |
+
+## 卡片契约
+
+```markdown
+### <前缀>-<四位序号>
+- 典籍: 书名·篇·节
+- 原文: 必须是所声明语料文件的精确子串（正规化后）
+- 白话: 自行撰写，禁止摘抄现代整理本译文
+- 适用前提:
+  - 触发该条所需的盘面事实（主理官据此判定引用是否成立）
+- 层级: 核心论断 | 操作规则 | 例证 | 存疑
+- 流派: 逗号分隔，取值见「流派 → 主题」表
+- 竞合:
+  - <对立卡片ID> — 差异说明（必须双向，对方也要回指本卡）（无对立卡片时可省略此字段）
+- 反例边界: 该条不适用的情形。必填
+- corpus: corpus/<file>#L<行号>（或范围 corpus/<file>#L<起>-L<止>）
+```
+
+主理官据「适用前提」与「反例边界」共同判定引用是否成立：前提不满足，或本盘
+情形落入反例边界，两者任一发生即不得采信该条。`checks_answer.py` 目前不
+核对 `反例边界`，这条纪律**只靠卡片作者据实撰写与主理官依文档执行**；
+`search_classics.py` 的检索结果会打印每张命中卡片的反例边界，是唯一的
+机械提示。
+
+`反例边界` 必填是刻意的：命理误判绝大多数来自把有条件的规则当无条件用。
+确实找不到边界时，写「未见明确边界，按存疑级处理」并把 `层级` 降为 `存疑`。
+
+`原文` 须与语料文件所用字形（繁/简）完全一致：`normalize()` 只去除空白与
+标点，不做繁简转换。语料若源自维基文库、ctext.org 等常见繁体来源，卡片
+原文也要用繁体抄录，否则校验只会报「原文未出现在 ...」，看不出真正原因。
+
+## `citation_fit` 格式
+
+`citation_fit` 每条说明**单独成行时必须缩进**，且缩进后第一个字符就是卡片 ID；
+否则 `checks_answer.py` 无法提取该 ID，会误报「缺少对应的 citation_fit 说明」。
+只有下面两种写法可用：
+
+- 缩进两格后单独成行，缩进后行首为该 ID：
+  ```text
+  citation_fit:
+    DTS-0001 — 月令与藏干齐备，符合该条适用前提
+  ```
+- 与 `citation_fit:` 写在同一行：
+  ```text
+  citation_fit: DTS-0001 — 月令与藏干齐备，符合该条适用前提
+  ```
+
+不缩进的独立行、或说明文字先于 ID 出现（如「关于 DTS-0001 的理由」），
+脚本都无法提取该 ID。
+
+## 常用命令
+
+当前工作目录通常是宿主项目而非 skill 目录，故脚本与 `references/` 一律用完整
+安装路径 `${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`（与 SKILL.md
+「Useful Commands」一致）：
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --cards "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "衰旺真机" --school 旺衰扶抑 --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/search_classics.py" "余寒犹存" --corpus --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```

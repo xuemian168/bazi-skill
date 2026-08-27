@@ -11,7 +11,14 @@ Use the references as a layered method stack:
 - Cross-disciplinary works: use social and psychological mappings as explanatory metaphors, not as scientific proof.
 - Project implementation docs: deterministic calculation and data-contract rules override interpretive prose.
 
-Do not cite a classical text decoratively. Cite or mention a source family only when the method uses that layer.
+Cite a classical text only through a card ID from `references/classics/index.md`,
+and verify it with the validator below. A book name without a backing 卡片 ID is
+decoration —— delete it. The working directory is normally a host project, not the
+skill directory, so script and `references/` paths use the full install path:
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/validate_citations.py" --answer answer.md --classics-root "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/references/classics"
+```
 
 ## Core Separation
 
