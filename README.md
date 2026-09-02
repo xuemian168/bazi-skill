@@ -96,9 +96,16 @@ flowchart TD
     end
 
     D --> E["Evidence Availability<br/>确认事实 + 缺口 + 用户约束"]
-    B --> R["references/<br/>宿主合约 / 分析方法 / 象法知识库 / 常见流派 / 合盘 / 择时 / 报告"]
+    B --> R["references/<br/>宿主合约 / 分析方法 / 常见流派 / 合盘 / 择时 / 报告"]
     R --> E
-    R --> RC["references/classics/<br/>条文卡片 + 引用契约"]
+
+    subgraph S2["两层依据（分工不同，互不替代）"]
+        RC["references/classics/<br/>条文卡片 + 引用契约<br/><i>引文逐字对语料核验</i>"]
+        RX["references/xiangfa-system/<br/>象法规则切片 + 来源映射<br/><i>带溯源，不做引文级核验</i>"]
+    end
+
+    B --> RC
+    B --> RX
     RC --> E
 
     E --> P["主理规划师<br/>选角色 / 选参考 / 定校验"]
@@ -108,6 +115,7 @@ flowchart TD
     F --> F2["旺衰扶抑"]
     F --> F3["调候"]
     F --> F4["盲派象法"]
+    RX -.->|"按需加载切片<br/>不入证据包"| F4
     F --> F5["神煞辅助"]
     F --> F6["紫微 / 星座 / 奇门 / 六爻 / 合盘 / 择日"]
 
