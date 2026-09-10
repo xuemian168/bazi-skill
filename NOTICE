@@ -1,0 +1,53 @@
+bazi-skill
+Copyright 2026 XueMian (ICT.RUN)
+
+This product includes software and documentation developed by XueMian (ICT.RUN),
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+================================================================================
+Classical source texts / 古籍原文
+================================================================================
+
+The classical Chinese texts this project cites — including but not limited to
+滴天髓, 子平真诠, 穷通宝鉴, 三命通会, and 渊海子平 — are in the PUBLIC DOMAIN.
+They are NOT covered by the Apache License above, and no rights over them are
+claimed or granted by this project.
+
+Where such text is vendored under `references/classics/corpus/`, each file's
+provenance — source URL, edition, retrieval date, sha256, and the basis for its
+public-domain status — is recorded in `references/classics/corpus/PROVENANCE.md`.
+
+本项目引用的中文古籍原文属公有领域，不在上述 Apache 许可范围内；本项目既不主张
+也不授予对这些原文的任何权利。入库原文的来源、版本、抓取日期、sha256 与公有领域
+依据，逐份记录在 `references/classics/corpus/PROVENANCE.md`。
+
+================================================================================
+Original work in the knowledge cards / 卡片中的原创部分
+================================================================================
+
+The Apache License DOES cover the original work in this repository, including:
+
+  - the 白话 (plain-language rendering), 适用前提 (applicability premises),
+    反例边界 (exclusion boundaries), and 层级 (tier) judgements in each card
+  - the card contract, routing index, and school-prompt/orchestrator/report
+    documentation under `references/`
+  - the Python under `scripts/` and `tests/`
+
+Modern punctuated, collated, annotated, or translated editions of the classics
+are separate copyrighted works and are NOT vendored here. Only public-domain
+source text is; every plain-language rendering in this repository is original.
+
+现代整理本的标点、校勘、注释与白话译文属他人著作权，未纳入本仓库；入库的仅为公有
+领域原文，本仓库中的白话均为原创。
+
+================================================================================
+Scope of use / 使用范围
+================================================================================
+
+This project frames BaZi and related traditions as cultural analysis and
+reflective guidance. It makes no claim to predictive accuracy, and its output is
+not medical, legal, financial, or psychological advice. See the warranty
+disclaimer in LICENSE section 7.
+
+本项目将八字及相关传统定位为文化分析与反思性建议，不声称预测准确性，其输出不构成
+医疗、法律、金融或心理建议。免责条款见 LICENSE 第 7 节。
