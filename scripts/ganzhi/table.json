@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "notes": [
+    "本表是 bazi-skill 干支静态事实的唯一数据源；references/bazi-domain-reference.md 的表格由测试与本表对齐。",
+    "folk_scale（大木/小水等）是阳干/阴干的俗称，只表阳刚/阴柔的质地，不代表数量或旺衰；旺衰看月令、通根、得势。",
+    "image 为常见通俗意象（流派约定），只作描述语言，不作用神判断依据。"
+  ],
+  "elements": ["木", "火", "土", "金", "水"],
+  "generates": {"木": "火", "火": "土", "土": "金", "金": "水", "水": "木"},
+  "controls": {"木": "土", "土": "水", "水": "火", "火": "金", "金": "木"},
+  "stems": [
+    {"name": "甲", "yinyang": "阳", "element": "木", "folk_scale": "大木", "image": "栋梁大树"},
+    {"name": "乙", "yinyang": "阴", "element": "木", "folk_scale": "小木", "image": "花草藤萝"},
+    {"name": "丙", "yinyang": "阳", "element": "火", "folk_scale": "大火", "image": "太阳"},
+    {"name": "丁", "yinyang": "阴", "element": "火", "folk_scale": "小火", "image": "灯烛星火"},
+    {"name": "戊", "yinyang": "阳", "element": "土", "folk_scale": "大土", "image": "高山城墙"},
+    {"name": "己", "yinyang": "阴", "element": "土", "folk_scale": "小土", "image": "田园湿土"},
+    {"name": "庚", "yinyang": "阳", "element": "金", "folk_scale": "大金", "image": "刀斧顽铁"},
+    {"name": "辛", "yinyang": "阴", "element": "金", "folk_scale": "小金", "image": "珠玉首饰"},
+    {"name": "壬", "yinyang": "阳", "element": "水", "folk_scale": "大水", "image": "江河大海"},
+    {"name": "癸", "yinyang": "阴", "element": "水", "folk_scale": "小水", "image": "雨露泉水"}
+  ],
+  "branches": [
+    {"name": "子", "yinyang": "阳", "element": "水", "zodiac": "鼠", "season": "冬", "ji_month": false, "hidden": ["癸"]},
+    {"name": "丑", "yinyang": "阴", "element": "土", "zodiac": "牛", "season": "冬", "ji_month": true, "hidden": ["己", "癸", "辛"]},
+    {"name": "寅", "yinyang": "阳", "element": "木", "zodiac": "虎", "season": "春", "ji_month": false, "hidden": ["甲", "丙", "戊"]},
+    {"name": "卯", "yinyang": "阴", "element": "木", "zodiac": "兔", "season": "春", "ji_month": false, "hidden": ["乙"]},
+    {"name": "辰", "yinyang": "阳", "element": "土", "zodiac": "龙", "season": "春", "ji_month": true, "hidden": ["戊", "乙", "癸"]},
+    {"name": "巳", "yinyang": "阴", "element": "火", "zodiac": "蛇", "season": "夏", "ji_month": false, "hidden": ["丙", "庚", "戊"]},
+    {"name": "午", "yinyang": "阳", "element": "火", "zodiac": "马", "season": "夏", "ji_month": false, "hidden": ["丁", "己"]},
+    {"name": "未", "yinyang": "阴", "element": "土", "zodiac": "羊", "season": "夏", "ji_month": true, "hidden": ["己", "丁", "乙"]},
+    {"name": "申", "yinyang": "阳", "element": "金", "zodiac": "猴", "season": "秋", "ji_month": false, "hidden": ["庚", "壬", "戊"]},
+    {"name": "酉", "yinyang": "阴", "element": "金", "zodiac": "鸡", "season": "秋", "ji_month": false, "hidden": ["辛"]},
+    {"name": "戌", "yinyang": "阳", "element": "土", "zodiac": "狗", "season": "秋", "ji_month": true, "hidden": ["戊", "辛", "丁"]},
+    {"name": "亥", "yinyang": "阴", "element": "水", "zodiac": "猪", "season": "冬", "ji_month": false, "hidden": ["壬", "甲"]}
+  ],
+  "season_states": {
+    "春": {"木": "旺", "火": "相", "水": "休", "金": "囚", "土": "死"},
+    "夏": {"火": "旺", "土": "相", "木": "休", "水": "囚", "金": "死"},
+    "秋": {"金": "旺", "水": "相", "土": "休", "火": "囚", "木": "死"},
+    "冬": {"水": "旺", "木": "相", "金": "休", "土": "囚", "火": "死"},
+    "季月": {"土": "旺", "金": "相", "火": "休", "木": "囚", "水": "死"}
+  },
+  "season_states_note": "辰戌丑未月按季月土旺取旺相休囚死；另有只取节前十八日为土旺用事的口径，本表不采用。",
+  "nayin": [
+    ["甲子", "乙丑", "海中金"], ["丙寅", "丁卯", "炉中火"], ["戊辰", "己巳", "大林木"],
+    ["庚午", "辛未", "路旁土"], ["壬申", "癸酉", "剑锋金"], ["甲戌", "乙亥", "山头火"],
+    ["丙子", "丁丑", "涧下水"], ["戊寅", "己卯", "城头土"], ["庚辰", "辛巳", "白蜡金"],
+    ["壬午", "癸未", "杨柳木"], ["甲申", "乙酉", "泉中水"], ["丙戌", "丁亥", "屋上土"],
+    ["戊子", "己丑", "霹雳火"], ["庚寅", "辛卯", "松柏木"], ["壬辰", "癸巳", "长流水"],
+    ["甲午", "乙未", "沙中金"], ["丙申", "丁酉", "山下火"], ["戊戌", "己亥", "平地木"],
+    ["庚子", "辛丑", "壁上土"], ["壬寅", "癸卯", "金箔金"], ["甲辰", "乙巳", "覆灯火"],
+    ["丙午", "丁未", "天河水"], ["戊申", "己酉", "大驿土"], ["庚戌", "辛亥", "钗钏金"],
+    ["壬子", "癸丑", "桑柘木"], ["甲寅", "乙卯", "大溪水"], ["丙辰", "丁巳", "沙中土"],
+    ["戊午", "己未", "天上火"], ["庚申", "辛酉", "石榴木"], ["壬戌", "癸亥", "大海水"]
+  ],
+  "stem_combos": [
+    {"pair": "甲己", "result": "土"}, {"pair": "乙庚", "result": "金"}, {"pair": "丙辛", "result": "水"},
+    {"pair": "丁壬", "result": "木"}, {"pair": "戊癸", "result": "火"}
+  ],
+  "stem_clashes": ["甲庚", "乙辛", "丙壬", "丁癸"],
+  "stem_clashes_note": "取主流四冲；戊己居中无冲。",
+  "branch_six_combos": [
+    {"pair": "子丑", "result": "土"}, {"pair": "寅亥", "result": "木"}, {"pair": "卯戌", "result": "火"},
+    {"pair": "辰酉", "result": "金"}, {"pair": "巳申", "result": "水"}, {"pair": "午未", "result": "土"}
+  ],
+  "branch_six_combos_note": "午未合一说合火、一说合而不化；本表记为土。合化是否成立属于解读，本表只记合的事实。",
+  "branch_clashes": ["子午", "丑未", "寅申", "卯酉", "辰戌", "巳亥"],
+  "branch_harms": ["子未", "丑午", "寅巳", "卯辰", "申亥", "酉戌"],
+  "branch_breaks": ["子酉", "卯午", "丑辰", "未戌", "寅亥", "巳申"],
+  "branch_three_combos": [
+    {"set": "申子辰", "result": "水"}, {"set": "亥卯未", "result": "木"},
+    {"set": "寅午戌", "result": "火"}, {"set": "巳酉丑", "result": "金"}
+  ],
+  "branch_half_combo_note": "半合只取含中神（子午卯酉）的两支；无中神的拱合流派分歧大，本表不收。",
+  "branch_three_meetings": [
+    {"set": "寅卯辰", "result": "木"}, {"set": "巳午未", "result": "火"},
+    {"set": "申酉戌", "result": "金"}, {"set": "亥子丑", "result": "水"}
+  ],
+  "branch_punishments": [
+    {"set": "寅巳申", "name": "无恩之刑"},
+    {"set": "丑戌未", "name": "恃势之刑"},
+    {"set": "子卯", "name": "无礼之刑"}
+  ],
+  "branch_self_punishments": ["辰", "午", "酉", "亥"],
+  "hour_stem_start": {
+    "甲": "甲", "己": "甲", "乙": "丙", "庚": "丙", "丙": "戊",
+    "辛": "戊", "丁": "庚", "壬": "庚", "戊": "壬", "癸": "壬"
+  },
+  "hour_stem_start_note": "五鼠遁：由日干定子时天干。晚子时（23:00-24:00）按子初换日归次日，按子正换日仍归当日，属流派分歧。",
+  "day_pillar_anchor": {"date": "1949-10-01", "pillar": "甲子"},
+  "day_pillar_note": "日柱按公历民用日期（00:00 换日）计算；节气不影响日柱。年柱、月柱依节气交接，本脚本不计算，须由宿主项目或用户提供。"
+}

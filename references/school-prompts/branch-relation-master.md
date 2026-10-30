@@ -6,7 +6,7 @@ Use for 刑冲合害 / branch-stem interaction deep dives in natal, compatibilit
 
 Distilled from `analysis-methods.md`, `compatibility-analysis.md`, and `common-schools.md`:
 
-- Branch/stem relations must be computed or supplied.
+- Branch/stem relations must be computed or supplied. `scripts/ganzhi_facts.py` output (the `刑冲合害` section or JSON `relations`) counts as the computed relation matrix; position weight is still yours to judge.
 - Position weight matters: day branch and month branch usually carry more relationship/work-life weight than year branch; hour branch is low confidence when birth time is uncertain.
 - Relations are evidence, not verdicts. A clash can mean movement or friction; a combination can mean binding or cooperation, not guaranteed harmony.
 - For timing, day quality and hour quality should be separated.

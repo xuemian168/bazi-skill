@@ -42,7 +42,7 @@ All chart/calendar/divination facts are CONFIRMED BY USER - DO NOT RECALCULATE, 
    - validated JSON or report data
 3. Decide blockers:
    - missing essentials that require asking the user
-   - missing deterministic facts that should be computed by code
+   - missing deterministic facts that should be computed by code; when pillars are confirmed but NaYin labels, ten gods, 生克 or branch/stem relations are absent, schedule `scripts/ganzhi_facts.py` (with `--date` for a 流日 question) instead of marking them `evidence_gap`
    - unsupported schools that must be skipped with `evidence_gap`
 4. Select a minimal useful role set:
    - include `safety-editor` for report-grade, relationship, health, investment, medical/legal-adjacent, or high-impact outputs
