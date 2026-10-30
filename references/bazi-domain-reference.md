@@ -2,6 +2,8 @@
 
 Read this for concise BaZi tables and rules needed by bazi-skill prompts, explanations, or lightweight verification. For normal host-project execution, prefer `lunar-javascript` or another deterministic library over manual calculation.
 
+These tables are for human reading. The single source of truth is `scripts/ganzhi/table.json`, and `tests/test_ganzhi_doc_sync.py` keeps the tables below in step with it. When answering about a specific chart or day (生克, 十神, 纳音, 刑冲合害, 旺相休囚死, 流日), do not look the answer up here and reason it out: run `scripts/ganzhi_facts.py` and quote its output.
+
 ## Ten Heavenly Stems
 
 | Stem | Yin/Yang | Element |

@@ -7,7 +7,7 @@ Use for 纳音辅助 only when NaYin labels are computed or explicitly supplied.
 Distilled from `common-schools.md` and the project-wide AI boundary:
 
 - NaYin is auxiliary image language, not the primary BaZi engine.
-- Code or supplied evidence must provide NaYin labels for pillars or candidate dates.
+- Code or supplied evidence must provide NaYin labels for pillars or candidate dates. `scripts/ganzhi_facts.py` output counts as code-provided labels.
 - NaYin may add color, material imagery, or repeated-theme nuance.
 - NaYin must not override day master strength, ten gods, Da Yun, branch relations, or validated scores.
 

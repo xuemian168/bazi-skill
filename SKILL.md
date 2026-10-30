@@ -14,6 +14,7 @@ Use this skill for project-aware BaZi, optional Zi Wei Dou Shu evidence, optiona
    - Skill or workflow architecture change, including requests to reference `ai-berkshire`, a multi-agent research/team pattern, multi-school masters, 大师会诊, 主理规划师, or 主理官综合: update this skill or related skill docs first; do not change frontend/backend application code unless the user explicitly asks for implementation.
    - Analysis JSON generation, repair, or validation: read `references/project-contracts.md`, then run `scripts/validate_analysis_result.py` on any candidate JSON.
    - BaZi rules, prompt wording, scoring logic, or domain explanation: read `references/bazi-domain-reference.md`, then `references/analysis-methods.md` when the task needs interpretation or ranking.
+   - 五行生克、十神、阴阳/大小（如小水、大火）、纳音、藏干、旺相休囚死、刑冲合害，或"今天/某天对我的命盘怎样": once the pillars are known, run `scripts/ganzhi_facts.py` and put its output into the evidence packet. Never derive these from memory or by reasoning over a table in context; quote the script output instead.
    - 盲派象法, 象法体系, concrete imagery, 宫位象, 十神象, or requests to make 象法 more complete/source-bounded: read `references/xiangfa-system/source-map.md`, then `references/xiangfa-system/coverage-map.md`, then only the required slice files.
    - True solar time, strict apparent solar time, timezone, longitude correction, equation of time, or boundary-hour issues: read `references/true-solar-time.md`; if implementing, also read `references/project-contracts.md`.
    - Zi Wei chart logic, palace display, or pattern wording: read `references/ziwei-reference.md`.
@@ -86,11 +87,12 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
    - For strict apparent solar time, add timezone-standard-meridian handling and equation-of-time correction; see `references/true-solar-time.md`.
    - Da Yun from `lunar.getEightChar().getYun(genderCode)` is authoritative when normal birth data is available.
    - Professional mode accepts user-entered pillars as truth and only fills defaults for missing `startAge`, `direction`, and `daYun`.
+   - This skill ships its own deterministic GanZhi fact layer: `scripts/ganzhi_facts.py` backed by `scripts/ganzhi/table.json`. Its output counts as code-computed facts for 生克, 十神, 纳音, 藏干, 旺相休囚死, 天干五合/相冲, 地支六合/半合/三合/三会/冲/刑/害/破, the 流日 day pillar of any calendar date, and the 流时 stem via 五鼠遁. It does not compute year/month pillars (节气), Da Yun, or true solar time; those still come from the host project or a user-confirmed chart and are passed in with `--chart`/`--dayun`/`--liunian`/`--liuyue`.
    - Do not assume the repo contains a Zi Wei service. Verify tracked/present files before referencing any path such as `services/ziweiService.ts` or `components/ZiWeiChartPanel.tsx`.
    - If Zi Wei is implemented, its palaces, stars, Si Hua, Da Xian, and pattern evidence must still come from deterministic code or a vetted library; do not hand-roll these facts in AI text.
    - Do not assume the repo contains a Western astrology service, ephemeris, or chart UI. Verify tracked/present files before referencing implementation paths.
    - If Western astrology is implemented, sun sign, moon sign, ascendant, houses, planetary placements, aspects, transits, synastry, and composite facts must come from deterministic code or user-confirmed charts.
-   - Do not assume the repo contains Qi Men, Liu Yao, NaYin, or Da Liu Ren services. Verify tracked/present files before referencing implementation paths.
+   - Do not assume the host repo contains Qi Men, Liu Yao, NaYin, or Da Liu Ren services. Verify tracked/present files before referencing implementation paths; for NaYin and branch/stem relations, `scripts/ganzhi_facts.py` is always available.
    - If Qi Men or Liu Yao is used, the plate or hexagram must come from deterministic code or a user-confirmed cast. AI must not cast, randomize, or derive it.
    - Never ask an AI model to calculate or recalculate BaZi, Da Yun, Liu Nian GanZhi, Zi Wei palaces/stars, Western astrology placements/houses/aspects/transits, NaYin labels, branch/stem relation matrices, Qi Men plates, Liu Yao hexagrams, compatibility matrices, or auspicious timing pillars. Code must compute these facts first; AI may only interpret, summarize, explain, rank from supplied features, or polish wording.
 
@@ -150,6 +152,7 @@ For complex BaZi/Zi Wei/Western astrology/common-school/K-line work, the main ag
 - `references/xiangfa-system/`: source map, coverage map, and local rule slices for source-bounded 盲派象法 / 象法 scene language.
 - `references/school-prompts/`: executable prompt templates and source-bounded knowledge slices for the orchestrator and each school master.
 - `scripts/validate_analysis_result.py`: deterministic validator for candidate K-line `AnalysisResult` JSON.
+- `scripts/ganzhi_facts.py` + `scripts/ganzhi/table.json`: 干支事实层（唯一数据源），输出生克、十神、纳音、藏干、旺相休囚死、刑冲合害和流日/流时干支。
 - `references/classics/index.md`: 古籍知识层入口，三向路由、卡片契约、层级定义与引用规范。
 - `scripts/validate_citations.py`: 卡片库自检（`--cards`）与答案/报告引用校验（`--answer`）。
 - `scripts/search_classics.py`: 零依赖检索，卡片优先、原文回落。
@@ -162,6 +165,12 @@ project, not the skill's own directory: script paths and the skill's own
 `${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/...`; user-supplied data files
 (`result.json`, `answer.md`) resolve relative to that host-project working
 directory.
+
+Print GanZhi facts for a confirmed chart against a given day (add `--json` for machine-readable output):
+
+```bash
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/scripts/ganzhi_facts.py" --chart 庚申 己丑 癸卯 壬子 --liunian 丙午 --liuyue 戊戌 --date today
+```
 
 Validate a JSON file:
 

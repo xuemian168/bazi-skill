@@ -93,6 +93,7 @@ flowchart TD
         D --> D2["可选紫微 / 星座 / 奇门 / 六爻事实<br/>仅在代码或用户确认后使用"]
         D --> D3["宿主项目 services / schemas<br/>AnalysisResult / BaZiResult"]
         D --> D4["真太阳时规则<br/>经度修正 / 视太阳时"]
+        D --> D5["ganzhi_facts.py<br/>生克 / 十神 / 纳音 / 刑冲合害 / 流日"]
     end
 
     D --> E["Evidence Availability<br/>确认事实 + 缺口 + 用户约束"]
@@ -140,6 +141,7 @@ flowchart TD
 ## 核心原则
 
 - 代码排盘，AI 只解读：八字四柱、大运、流年、紫微盘、西洋占星星盘/星座/相位、纳音、刑冲合害关系、奇门盘、六爻卦象、合盘关系、吉时干支等事实必须由宿主项目代码或确定性脚本计算，不能由 AI 口算或重算。
+- 干支事实查表：五行生克、十神、阴阳大小（小水/大火）、纳音、藏干、旺相休囚死、刑冲合害和流日干支一律由 `scripts/ganzhi_facts.py` 按 `scripts/ganzhi/table.json` 查出，模型只引用脚本输出，不凭记忆推。
 - 确认盘为真：一旦用户确认或代码输出了命盘事实，后续解释和报告都必须以这些事实为准。
 - 信息先补齐：出生信息、地点/时区、真太阳时口径、合盘双方资料、择时时间范围等关键输入缺失时，先追问，不直接猜。
 - 多流派会诊：复杂命理任务先由“主理规划师”选择角色、参考和校验步骤，再让多个主流流派“大师”分别解读，最后由“主理官”综合输出，避免简单拼接或平均分。
@@ -260,6 +262,7 @@ K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0
   校验链路先行可跑。
 - `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
 - `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
+- `scripts/ganzhi_facts.py`、`scripts/ganzhi/`：干支事实层。`table.json` 是干支静态事实的唯一数据源，`references/bazi-domain-reference.md` 的表格由测试与它对齐。
 
 ## Claude Code 兼容
 
@@ -270,6 +273,12 @@ K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0
 ## 常用命令
 
 以下命令默认在 `bazi-skill` skill 目录下运行。
+
+查某张已确认命盘在某天的干支事实（加 `--json` 输出机器可读格式；年柱、月柱、大运需由宿主项目算好再传入）：
+
+```bash
+python3 scripts/ganzhi_facts.py --chart 庚申 己丑 癸卯 壬子 --liunian 丙午 --liuyue 戊戌 --date today
+```
 
 校验 `AnalysisResult` JSON：
 

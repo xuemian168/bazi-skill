@@ -26,6 +26,8 @@ Code or supplied evidence owns:
 
 AI must not calculate these from raw dates, times, random numbers, coins, or memory. If the fact is not in the evidence packet, return `evidence_gap`.
 
+NaYin labels and branch/stem relation matrices are the exception that this skill can compute itself: once the pillars are confirmed, run `scripts/ganzhi_facts.py` and add its output to the evidence packet instead of returning `evidence_gap`. Relation strength and position weighting stay interpretive.
+
 ## School Notes
 
 ### NaYin 辅助
