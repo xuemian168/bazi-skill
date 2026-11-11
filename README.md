@@ -3,7 +3,8 @@
 主打一个：用最科学的方式，做最不科学的事情。
 
 **网页版 / Web App**: [dockon.de](https://dockon.de)  
-**GitHub**: [xuemian168/bazi-skill](https://github.com/xuemian168/bazi-skill)
+**GitHub**: [xuemian168/bazi-skill](https://github.com/xuemian168/bazi-skill)  
+**配套论文 / Paper**: [arXiv:2611.13597](https://arxiv.org/abs/2611.13597)（引用格式见[配套论文与引用](#配套论文与引用)）
 
 说明：`dockon.de` 是网页版产品层，核心是确定性精确计算 + prompt engineering；它本身不是 harness。本文所说的 harness 指 `bazi-skill` 这套面向 Codex / Claude Code 的工作流编排层，用来组织事实计算、证据包、多流派角色、主理规划与结果校验。
 
@@ -303,6 +304,24 @@ python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_
 - 面向用户的最终表达应保持“文化分析与反思建议”的定位，不做确定性医疗、法律、金融承诺。
 - 报告、合盘、择日择时等输出要写清楚计算依据、适用范围、假设条件和不确定性。
 - 需要改项目代码时，先读项目内相关 `CLAUDE.md` 和 touched modules；只改 skill 文档时，不应顺手改应用代码。
+
+## 配套论文与引用
+
+本项目的配套论文研究的是：给语言模型配一个确定性事实层时，这个事实层该算到哪一步。论文以本项目的干支事实层（`scripts/ganzhi_facts.py` 与 `scripts/ganzhi/table.json` v1）为基础构建基准，在 11 个开源模型和 3 个闭源推理模型上比较了三种做法：只给属性、给完整关系列表、只给问题相关的关系。结论是事实层必须把干支之间的关系算好交给模型，这也是本项目"干支事实查表、模型只引用脚本输出"这条原则的依据。如果你在研究中用到本项目，请引用：
+
+> Huixue Han and Jiaying Liu. 2026. *Compute the Interactions, Not the Attributes: What a Fact Layer Must Supply in the Chinese Sexagenary System*. arXiv:2611.13597. <https://arxiv.org/abs/2611.13597>
+
+```bibtex
+@misc{han2026compute,
+  title         = {Compute the Interactions, Not the Attributes: What a Fact Layer Must Supply in the Chinese Sexagenary System},
+  author        = {Han, Huixue and Liu, Jiaying},
+  year          = {2026},
+  eprint        = {2611.13597},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2611.13597}
+}
+```
 
 ## 许可
 
