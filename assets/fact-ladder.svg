@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" role="img" aria-labelledby="title desc">
+  <title id="title">给得多，不等于答得对</title>
+  <desc id="desc">同一批 80 道冲合题的答对率。Qwen3-32B 直接回答：只给题目 0%，加每柱资料 0%，加全部关系 1%，只给问到的关系 92%。Qwen3.8-27B 先推理再回答：82%、68%、96%、100%。数据来自 Han 与 Liu 2026，arXiv:2611.13597，图 1。</desc>
+  <defs>
+    <style>
+      .serif { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif; }
+      .sans { font-family: "PingFang SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+      .num { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="600" rx="20" fill="#0F172A"/>
+
+  <text class="serif" x="64" y="70" font-size="32" font-weight="700" fill="#F8FAFC">给得多，不等于答得对</text>
+  <text class="sans" x="64" y="106" font-size="18" fill="#94A3B8">80 道冲合题。从左到右，脚本替模型算好的东西越来越多。柱子越高，答对的越多</text>
+
+  <!-- legend -->
+  <g class="sans" font-size="16" fill="#CBD5E1">
+    <rect x="64" y="132" width="14" height="14" rx="3" fill="#F97316"/>
+    <text x="86" y="145">Qwen3-32B（直接回答）</text>
+    <rect x="320" y="132" width="14" height="14" rx="3" fill="#60A5FA"/>
+    <text x="342" y="145">Qwen3.8-27B（先推理再回答）</text>
+  </g>
+
+  <!-- highlight rung 4 -->
+  <rect x="932" y="170" width="256" height="364" rx="14" fill="#22C55E" fill-opacity="0.07" stroke="#22C55E" stroke-opacity="0.5"/>
+
+  <!-- grid: plot top y=200 (100%), baseline y=440 (0%), 2.4px per point -->
+  <g stroke="#1E293B" stroke-width="1">
+    <line x1="112" y1="200" x2="1200" y2="200"/>
+    <line x1="112" y1="320" x2="1200" y2="320"/>
+  </g>
+  <line x1="112" y1="440" x2="1200" y2="440" stroke="#475569" stroke-width="1.5"/>
+  <g class="num" font-size="13" fill="#64748B" text-anchor="end">
+    <text x="100" y="205">100%</text>
+    <text x="100" y="325">50%</text>
+    <text x="100" y="445">0%</text>
+  </g>
+
+  <!-- bars: group centres 250 / 520 / 790 / 1060 -->
+  <g>
+    <!-- rung 1 -->
+    <rect x="174" y="439" width="70" height="1" fill="#F97316"/>
+    <rect x="256" y="243.2" width="70" height="196.8" rx="4" fill="#60A5FA"/>
+    <!-- rung 2 -->
+    <rect x="444" y="439" width="70" height="1" fill="#F97316"/>
+    <rect x="526" y="276.8" width="70" height="163.2" rx="4" fill="#60A5FA"/>
+    <!-- rung 3 -->
+    <rect x="714" y="437.6" width="70" height="2.4" fill="#F97316"/>
+    <rect x="796" y="209.6" width="70" height="230.4" rx="4" fill="#60A5FA"/>
+    <!-- rung 4 -->
+    <rect x="984" y="219.2" width="70" height="220.8" rx="4" fill="#F97316"/>
+    <rect x="1066" y="200" width="70" height="240" rx="4" fill="#60A5FA"/>
+  </g>
+
+  <g class="num" font-size="18" font-weight="700" text-anchor="middle">
+    <text x="209" y="428" fill="#FDBA74">0%</text>
+    <text x="291" y="233" fill="#BFDBFE">82%</text>
+    <text x="479" y="428" fill="#FDBA74">0%</text>
+    <text x="561" y="267" fill="#BFDBFE">68%</text>
+    <text x="749" y="426" fill="#FDBA74">1%</text>
+    <text x="831" y="200" fill="#BFDBFE">96%</text>
+    <text x="1019" y="210" fill="#FDBA74">92%</text>
+    <text x="1101" y="190" fill="#BFDBFE">100%</text>
+  </g>
+
+  <!-- rung labels -->
+  <g class="sans" text-anchor="middle">
+    <text x="250" y="474" font-size="19" font-weight="600" fill="#F8FAFC">① 只给题目</text>
+    <text x="250" y="502" font-size="15" fill="#94A3B8">模型自己算</text>
+    <text x="520" y="474" font-size="19" font-weight="600" fill="#F8FAFC">② 加每柱资料</text>
+    <text x="520" y="502" font-size="15" fill="#94A3B8">阴阳、五行、藏干</text>
+    <text x="790" y="474" font-size="19" font-weight="600" fill="#F8FAFC">③ 加全部关系</text>
+    <text x="790" y="502" font-size="15" fill="#94A3B8">答案就在列表里</text>
+    <text x="1060" y="474" font-size="19" font-weight="600" fill="#F8FAFC">④ 只给问到的关系</text>
+    <text x="1060" y="502" font-size="15" fill="#86EFAC">只列问到的那几条</text>
+  </g>
+
+  <text class="sans" x="64" y="568" font-size="14" fill="#64748B">数据来自 Han &amp; Liu (2026)，arXiv:2611.13597，图 1</text>
+</svg>
