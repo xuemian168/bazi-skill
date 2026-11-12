@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">bazi-skill</title>
+  <desc id="desc">代码排盘、查表求证、AI 只解读。右侧终端是 scripts/ganzhi_facts.py 对一张虚构命盘在 2026-11-12 的真实输出：流日庚寅，与年柱申六冲、相刑，月柱丑与时柱子六合。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1222"/>
+      <stop offset="1" stop-color="#131D35"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#1C2740" stroke-width="1"/>
+    </pattern>
+    <style>
+      .serif { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif; }
+      .sans { font-family: "PingFang SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+      .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono CJK SC", "PingFang SC", monospace; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="400" rx="20" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="20" fill="url(#grid)"/>
+
+  <!-- seal -->
+  <g transform="translate(72 76)">
+    <rect width="92" height="92" rx="10" fill="#C8372D"/>
+    <rect x="7" y="7" width="78" height="78" rx="5" fill="none" stroke="#FBE3DF" stroke-width="2"/>
+    <text class="serif" x="46" y="44" text-anchor="middle" font-size="32" font-weight="700" fill="#FFF6F4">八</text>
+    <text class="serif" x="46" y="78" text-anchor="middle" font-size="32" font-weight="700" fill="#FFF6F4">字</text>
+  </g>
+
+  <text class="mono" x="188" y="128" font-size="54" font-weight="700" fill="#F8FAFC">bazi-skill</text>
+  <text class="serif" x="190" y="166" font-size="24" fill="#CBD5E1">用最科学的方式，做最不科学的事情</text>
+
+  <!-- pipeline chips -->
+  <g class="sans" font-size="20" font-weight="600">
+    <rect x="72" y="214" width="132" height="44" rx="22" fill="#1E293B" stroke="#334155"/>
+    <text x="138" y="243" text-anchor="middle" fill="#F8FAFC">代码排盘</text>
+    <path d="M216 236h24m-8-7 8 7-8 7" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="252" y="214" width="132" height="44" rx="22" fill="#1E293B" stroke="#334155"/>
+    <text x="318" y="243" text-anchor="middle" fill="#F8FAFC">查表求证</text>
+    <path d="M396 236h24m-8-7 8 7-8 7" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="432" y="214" width="148" height="44" rx="22" fill="#14532D" stroke="#22C55E"/>
+    <text x="506" y="243" text-anchor="middle" fill="#DCFCE7">AI 只解读</text>
+  </g>
+
+  <text class="sans" x="72" y="318" font-size="17" fill="#94A3B8">八字 · 紫微 · 星座 · 奇门 · 六爻 · 合盘 · 择日择时</text>
+  <text class="sans" x="72" y="346" font-size="17" fill="#94A3B8">Codex / Claude Code Skill</text>
+
+  <!-- terminal -->
+  <g transform="translate(676 52)">
+    <rect width="540" height="296" rx="14" fill="#0A0F1C" stroke="#334155"/>
+    <path d="M0 14a14 14 0 0 1 14-14h512a14 14 0 0 1 14 14v26H0z" fill="#1E293B"/>
+    <circle cx="22" cy="20" r="5" fill="#475569"/>
+    <circle cx="40" cy="20" r="5" fill="#475569"/>
+    <circle cx="58" cy="20" r="5" fill="#475569"/>
+    <text class="mono" x="270" y="25" text-anchor="middle" font-size="13" fill="#94A3B8">scripts/ganzhi_facts.py</text>
+
+    <g class="mono" font-size="15">
+      <text x="22" y="72" fill="#E2E8F0"><tspan fill="#22C55E">$</tspan> python3 scripts/ganzhi_facts.py \</text>
+      <text x="22" y="96" fill="#E2E8F0" xml:space="preserve">    --chart 庚申 己丑 壬辰 庚子 --date 2026-11-12</text>
+      <text x="22" y="136" fill="#4ADE80"># CONFIRMED BY CODE - DO NOT RECALCULATE</text>
+      <text x="22" y="164" fill="#CBD5E1">流日 庚寅｜纳音 松柏木｜干 庚=偏印</text>
+      <text x="22" y="198" fill="#CBD5E1">[支] <tspan fill="#FB923C">六冲</tspan>：年柱申 + 流日寅</text>
+      <text x="22" y="224" fill="#CBD5E1">[支] <tspan fill="#FB923C">相刑</tspan> → 无恩之刑：年柱申 + 流日寅</text>
+      <text x="22" y="250" fill="#CBD5E1">[支] <tspan fill="#60A5FA">六合</tspan> → 土：月柱丑 + 时柱子</text>
+      <text x="22" y="276" fill="#64748B">…</text>
+    </g>
+  </g>
+</svg>

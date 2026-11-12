@@ -1,18 +1,168 @@
-# bazi-skill: 八字排盘、紫微斗数、星座合参、奇门六爻、合盘与择日择时 Skill
+<div align="center">
 
-主打一个：用最科学的方式，做最不科学的事情。
+<img src="assets/banner.svg" width="100%" alt="bazi-skill：代码排盘、查表求证、AI 只解读。右侧终端是 ganzhi_facts.py 对一张虚构命盘的真实输出：流日庚寅与年柱申六冲、相刑，月柱丑与时柱子六合">
 
-**网页版 / Web App**: [dockon.de](https://dockon.de)  
-**GitHub**: [xuemian168/bazi-skill](https://github.com/xuemian168/bazi-skill)  
-**配套论文 / Paper**: [arXiv:2611.13597](https://arxiv.org/abs/2611.13597)（引用格式见[配套论文与引用](#配套论文与引用)）
+<p><b>八字排盘 · 紫微斗数 · 星座合参 · 奇门六爻 · 合盘 · 择日择时</b><br>
+给 Codex 和 Claude Code 用的命理 Skill。<br>代码负责算，模型负责解读。</p>
 
-说明：`dockon.de` 是网页版产品层，核心是确定性精确计算 + prompt engineering；它本身不是 harness。本文所说的 harness 指 `bazi-skill` 这套面向 Codex / Claude Code 的工作流编排层，用来组织事实计算、证据包、多流派角色、主理规划与结果校验。
+[![tests](https://github.com/xuemian168/bazi-skill/actions/workflows/tests.yml/badge.svg)](https://github.com/xuemian168/bazi-skill/actions/workflows/tests.yml)
+[![release](https://img.shields.io/github/v/release/xuemian168/bazi-skill?label=release&color=1E293B)](https://github.com/xuemian168/bazi-skill/releases)
+[![arXiv](https://img.shields.io/badge/arXiv-2611.13597-B31B1B?logo=arxiv&logoColor=white)](https://arxiv.org/abs/2611.13597)
+[![license](https://img.shields.io/github/license/xuemian168/bazi-skill?color=334155)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](#常用命令)
+[![脚本依赖](https://img.shields.io/badge/%E8%84%9A%E6%9C%AC%E4%BE%9D%E8%B5%96-0_%C2%B7_%E7%BA%AF%E6%A0%87%E5%87%86%E5%BA%93-22C55E)](#怎么保证算对)
 
-`bazi-skill` 是一套可复用的 Codex / Claude Code Skill，用于八字排盘、四柱命理、真太阳时、可选紫微斗数事实、可选西洋占星/星座事实、可选纳音/刑冲合害/奇门遁甲/六爻事实、运势 K-line JSON、合盘合婚、择日择时和专业命理报告工作流。紫微、星座/占星、奇门和六爻等事实只有在代码已计算或用户提供确认盘/卦时才能使用；当前不提供 PDF 导出能力。
+[![干支事实：代码查表](https://img.shields.io/badge/%E5%B9%B2%E6%94%AF%E4%BA%8B%E5%AE%9E-%E4%BB%A3%E7%A0%81%E6%9F%A5%E8%A1%A8-1E293B?labelColor=C8372D)](scripts/ganzhi/table.json)
+[![日柱与纳音：对拍 lunar-javascript](https://img.shields.io/badge/%E6%97%A5%E6%9F%B1_%C2%B7_%E7%BA%B3%E9%9F%B3-%E5%AF%B9%E6%8B%8D_lunar--javascript-1E293B?labelColor=C8372D)](tests/test_ganzhi.py)
+[![关系规则：clingo 穷举验证](https://img.shields.io/badge/%E5%85%B3%E7%B3%BB%E8%A7%84%E5%88%99-clingo_%E7%A9%B7%E4%B8%BE%E9%AA%8C%E8%AF%81-1E293B?labelColor=C8372D)](https://arxiv.org/abs/2611.13597)
+[![古籍引用：逐字核验](https://img.shields.io/badge/%E5%8F%A4%E7%B1%8D%E5%BC%95%E7%94%A8-%E9%80%90%E5%AD%97%E6%A0%B8%E9%AA%8C-1E293B?labelColor=C8372D)](scripts/validate_citations.py)
+[![证据不足：evidence_gap，不补规则](https://img.shields.io/badge/%E8%AF%81%E6%8D%AE%E4%B8%8D%E8%B6%B3-evidence__gap_%E4%B8%8D%E8%A1%A5%E8%A7%84%E5%88%99-1E293B?labelColor=C8372D)](references/school-prompts)
 
-关键词：八字排盘、四柱、紫微斗数、星座、西洋占星、现代占星、传统占星、纳音、刑冲合害、奇门遁甲、六爻、真太阳时、合盘、合婚、择日、择时、吉日吉时、Codex Skill、Claude Code Skill、BaZi、Zi Wei Dou Shu、Qi Men Dun Jia、Liu Yao、Western astrology、zodiac signs、natal chart、synastry、Chinese astrology、true solar time。
+<p>
+<a href="https://dockon.de"><b>网页版 dockon.de</b></a> ·
+<a href="#安装方式">安装</a> ·
+<a href="#为什么要用代码算">为什么要用代码算</a> ·
+<a href="#怎么保证算对">怎么保证算对</a> ·
+<a href="#架构图">架构</a> ·
+<a href="#输出案例">案例</a> ·
+<a href="#配套论文与引用">论文</a>
+</p>
 
-运行入口仍然是 `SKILL.md`。本 README 只作为人读版说明，方便快速了解这个 skill 能做什么、有哪些约束、以及常用命令在哪里。
+</div>
+
+---
+
+## 为什么要用代码算
+
+读一张八字盘，要先弄清很多基本事实。比如：
+
+- 日主是什么五行；
+- 某个天干对日主来说是什么十神；
+- 今天是什么干支；
+- 今天跟命盘的哪一柱相冲，跟哪一柱相合。
+
+这些事实错一个，后面的解读就跟着错。
+
+可是模型写出来的话依然很通顺。用户很难发现。
+
+我们写了一篇论文，专门测这个问题：[arXiv:2611.13597](https://arxiv.org/abs/2611.13597)。
+
+我们出了两组题。每道题都有标准答案，可以查表核对。
+
+- 第一组是 682 道基础题。比如：甲和庚之间，谁克谁？
+- 第二组是 160 道冲合题。给一张命盘和一个日子，问这一天跟每一柱有哪些冲、合、刑、害。
+
+同一道题，我们用 4 种方式去问模型。
+
+下图从左到右，脚本替模型算好的东西越来越多。
+
+<p align="center">
+<img src="assets/fact-ladder.svg" width="100%" alt="80 道冲合题的答对率。Qwen3-32B 直接回答：只给题目 0%，加每柱资料 0%，加全部关系 1%，只给问到的关系 92%。Qwen3.8-27B 先推理再回答：82%、68%、96%、100%">
+</p>
+
+从图里能看出 4 件事。
+
+1. **只靠模型自己记，基本答不对。** 11 个开源模型直接回答：算日柱，最好的只对 4%；冲合题，最好的只对 1%。
+2. **只给基本资料，没有用。** 把每一柱的阴阳、五行、藏干都告诉模型，冲合题照样答不对。
+3. **把所有关系都列给它，也不行。** 答案明明就在列表里，Qwen3-32B 还是只对 1%。它会把别的柱之间的关系，错当成问的那一柱。
+4. **只给问到的那几条，就答对了。** 同一个模型，答对率升到 92%。
+
+还有两点：
+
+- 3 个商业大模型会先推理再回答。不靠脚本时，冲合题能对 68% 到 95%，也做不到全对。
+- 一些小一点的开源模型，先推理再回答时，会把我们给的正确答案改错。
+
+所以在本项目里，下面这些都由脚本 [`scripts/ganzhi_facts.py`](scripts/ganzhi_facts.py) 来算：
+
+- 五行生克
+- 十神
+- 纳音
+- 刑冲合害
+- 当天的干支
+
+模型只负责解读，不自己算。
+
+## 怎么保证算对
+
+每一步都有办法检查。
+
+- **四柱、大运、流年**
+
+  由 `lunar-javascript` 或宿主项目的代码来算。模型拿到结果后，不能重算。
+
+  见 [`SKILL.md`](SKILL.md)。
+
+- **干支的基本资料**
+
+  只存在 [`table.json`](scripts/ganzhi/table.json) 这一个文件里。文档里的表格，测试会逐条跟它比对。
+
+  见 [`test_ganzhi_doc_sync.py`](tests/test_ganzhi_doc_sync.py)。
+
+- **日柱和纳音**
+
+  跟 `lunar-javascript` 的结果逐个对照。
+
+  见 [`test_ganzhi.py`](tests/test_ganzhi.py)。
+
+- **冲合规则本身**
+
+  我们用另一个工具 clingo，把规则从头写了一遍，没有看本项目的代码。两边在所有情况下的结果都一样。
+
+  我们还故意写错规则，做了 12 个错误版本。每一个都被查了出来。
+
+  见论文附录 G。
+
+- **结构化输出**
+
+  `AnalysisResult` 这类 JSON，必须先通过 [`validate_analysis_result.py`](scripts/validate_analysis_result.py) 检查，才能交付。
+
+- **古籍引用**
+
+  只能按卡片编号引用。原文要跟语料逐字对照。找不到出处，就写 `no_classical_basis`。
+
+  见 [`validate_citations.py`](scripts/validate_citations.py)。
+
+- **证据不够时**
+
+  写 `evidence_gap`，不自己编规则。
+
+  见 [`school-prompts/`](references/school-prompts)。
+
+全部测试一共 195 个，只用 Python 自带的库。
+
+代码合进 main 之前和之后，测试都会在 Python 3.9 和 3.13 上自动跑一遍。
+
+## 这是什么
+
+`bazi-skill` 是一个 Skill，给 Codex 和 Claude Code 用。
+
+它能做这些事：
+
+- 排八字，算真太阳时；
+- 生成运势 K 线 JSON；
+- 合盘、合婚；
+- 挑日子、挑时辰；
+- 写命理报告。
+
+它也能用紫微斗数、西洋占星、奇门遁甲和六爻的结果。
+
+前提是：这些结果由代码算出来，或者用户给了确认过的盘或卦。
+
+暂时不能导出 PDF。
+
+网页版是 [dockon.de](https://dockon.de)。它用代码精确计算，再配上提示词。
+
+bazi-skill 本身是一个 harness，也就是把各个步骤串起来的那一层。它负责：
+
+- 算出事实；
+- 整理证据；
+- 安排各个流派；
+- 做总体规划；
+- 检查结果。
+
+模型运行时读的是 `SKILL.md`。这份 README 是给人看的。
+
+<sub>关键词：八字排盘、四柱、紫微斗数、星座、西洋占星、现代占星、传统占星、纳音、刑冲合害、奇门遁甲、六爻、真太阳时、合盘、合婚、择日、择时、吉日吉时、Codex Skill、Claude Code Skill、BaZi、Zi Wei Dou Shu、Qi Men Dun Jia、Liu Yao、Western astrology、zodiac signs、natal chart、synastry、Chinese astrology、true solar time。</sub>
 
 ## 安装方式
 
@@ -27,14 +177,7 @@ mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 git clone https://github.com/xuemian168/bazi-skill.git "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 ```
 
-如果已经下载到本地，也可以直接复制：
-
-```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R /path/to/bazi-skill "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
-```
-
-安装后开启新的 Codex 会话，直接用自然语言提出八字、合盘、择日择时、K-line JSON 或报告相关需求即可触发。
+安装后开启新的 Codex 会话，直接用自然语言提出八字、合盘、择日择时、K-line JSON 或报告相关的需求，就会触发这个 skill。
 
 ### 安装到 Claude Code
 
@@ -51,21 +194,29 @@ git clone https://github.com/xuemian168/bazi-skill.git .claude/skills/bazi-skill
 /bazi-skill
 ```
 
-### 更新
+<details>
+<summary><b>从本地复制、更新与验证安装</b></summary>
+
+如果已经下载到本地，也可以直接复制：
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+cp -R /path/to/bazi-skill "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
+```
+
+更新 Codex 安装：
 
 ```bash
 cd "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 git pull
 ```
 
-Claude Code 项目级安装则在宿主项目中运行：
+Claude Code 是项目级安装，在宿主项目中更新：
 
 ```bash
 cd .claude/skills/bazi-skill
 git pull
 ```
-
-### 验证安装
 
 确认入口文件存在：
 
@@ -74,11 +225,37 @@ test -f "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill/SKILL.md" && echo "Codex 
 test -f ".claude/skills/bazi-skill/SKILL.md" && echo "Claude Code skill installed"
 ```
 
-如本机已有 Codex 的 `skill-creator` 系统脚本，可进一步校验 skill 格式：
+如果本机已有 Codex 的 `skill-creator` 系统脚本，可以进一步校验 skill 格式：
 
 ```bash
 python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" "${CODEX_HOME:-$HOME/.codex}/skills/bazi-skill"
 ```
+
+</details>
+
+## 核心原则
+
+- 代码排盘，AI 只解读：八字四柱、大运、流年、紫微盘、西洋占星星盘/星座/相位、纳音、刑冲合害关系、奇门盘、六爻卦象、合盘关系、吉时干支等事实必须由宿主项目代码或确定性脚本计算，不能由 AI 口算或重算。
+- 干支事实查表：五行生克、十神、阴阳大小（小水/大火）、纳音、藏干、旺相休囚死、刑冲合害和流日干支一律由 `scripts/ganzhi_facts.py` 按 `scripts/ganzhi/table.json` 查出，模型只引用脚本输出，不凭记忆推。
+- 确认盘为真：一旦用户确认或代码输出了命盘事实，后续解释和报告都必须以这些事实为准。
+- 信息先补齐：出生信息、地点/时区、真太阳时口径、合盘双方资料、择时时间范围等关键输入缺失时，先追问，不直接猜。
+- 多流派会诊：复杂命理任务先由“主理规划师”选择角色、参考和校验步骤，再让多个主流流派“大师”分别解读，最后由“主理官”综合输出，避免简单拼接或平均分。
+- 结构先验证：`AnalysisResult`、报告 JSON 等结构化结果必须先通过脚本校验，再视为可交付。
+- 引用必须可核对：典籍条文一律通过卡片 ID 引用，原文可机械比对语料原文；
+  确无可引时显式写 `no_classical_basis`。这套机制不追求让预测更准（命理判断不可证伪），
+  而是让输出可追溯、可反驳、边界清楚。
+
+## 主要能力
+
+- 八字、紫微与星座流程：八字默认围绕 `lunar-javascript` 或宿主项目已有确定性实现；紫微、西洋占星、奇门、六爻必须先确认 repo 中已有确定性实现或用户已提供确认盘/卦，不能假设存在 `ziweiService.ts`、astrology service、qimen service 或 liuyao service。
+- 真太阳时处理：区分宿主项目的经度修正口径与更严格的视太阳时口径；默认可用城市级经度，专业模式建议区县/乡镇/地图点选或手动经度，并处理时辰边界风险。
+- 运势 K-line JSON：生成、修复、审查符合宿主项目 `AnalysisResult` 合约的 100 年时间线数据。
+- 多流派大师会诊：先由主理规划师决定是否调用子平格局、旺衰扶抑、调候、盲派象法、刑冲合害、神煞辅助、纳音、紫微、现代/传统西洋占星、奇门、六爻、择日、合盘等角色，最终由主理官综合。
+- 盲派象法有 reference：象法输出必须先看 `references/xiangfa-system/source-map.md` 和 `coverage-map.md`，再用本地规则切片；没有来源或没有落成本地规则的口诀，一律 `evidence_gap`。
+- 合盘与合婚：对双方命盘进行关系动力、互补点、冲突点、阶段节奏和注意事项分析。
+- 吉日吉时：按事件类型、候选日期、地点时区和硬性限制，输出可解释的择日择时排序。
+- 一事一问：在已有奇门盘或六爻卦象时，对投稿、签约、合作、面试等具体问题做证据化解读。
+- 专业报告：从已验证 JSON 或报告规格生成结构化、Markdown 或 HTML 风格的中文报告；当前不生成 PDF。
 
 ## 架构图
 
@@ -139,30 +316,6 @@ flowchart TD
     J --> K["最终交付<br/>专业报告 / 可解释建议 / 合约有效数据"]
 ```
 
-## 核心原则
-
-- 代码排盘，AI 只解读：八字四柱、大运、流年、紫微盘、西洋占星星盘/星座/相位、纳音、刑冲合害关系、奇门盘、六爻卦象、合盘关系、吉时干支等事实必须由宿主项目代码或确定性脚本计算，不能由 AI 口算或重算。
-- 干支事实查表：五行生克、十神、阴阳大小（小水/大火）、纳音、藏干、旺相休囚死、刑冲合害和流日干支一律由 `scripts/ganzhi_facts.py` 按 `scripts/ganzhi/table.json` 查出，模型只引用脚本输出，不凭记忆推。
-- 确认盘为真：一旦用户确认或代码输出了命盘事实，后续解释和报告都必须以这些事实为准。
-- 信息先补齐：出生信息、地点/时区、真太阳时口径、合盘双方资料、择时时间范围等关键输入缺失时，先追问，不直接猜。
-- 多流派会诊：复杂命理任务先由“主理规划师”选择角色、参考和校验步骤，再让多个主流流派“大师”分别解读，最后由“主理官”综合输出，避免简单拼接或平均分。
-- 结构先验证：`AnalysisResult`、报告 JSON 等结构化结果必须先通过脚本校验，再视为可交付。
-- 引用必须可核对：典籍条文一律通过卡片 ID 引用，原文可机械比对语料原文；
-  确无可引时显式写 `no_classical_basis`。这套机制不追求让预测更准（命理判断不可证伪），
-  而是让输出可追溯、可反驳、边界清楚。
-
-## 主要能力
-
-- 八字、紫微与星座流程：八字默认围绕 `lunar-javascript` 或宿主项目已有确定性实现；紫微、西洋占星、奇门、六爻必须先确认 repo 中已有确定性实现或用户已提供确认盘/卦，不能假设存在 `ziweiService.ts`、astrology service、qimen service 或 liuyao service。
-- 真太阳时处理：区分宿主项目的经度修正口径与更严格的视太阳时口径；默认可用城市级经度，专业模式建议区县/乡镇/地图点选或手动经度，并处理时辰边界风险。
-- 运势 K-line JSON：生成、修复、审查符合宿主项目 `AnalysisResult` 合约的 100 年时间线数据。
-- 多流派大师会诊：先由主理规划师决定是否调用子平格局、旺衰扶抑、调候、盲派象法、刑冲合害、神煞辅助、纳音、紫微、现代/传统西洋占星、奇门、六爻、择日、合盘等角色，最终由主理官综合。
-- 盲派象法有 reference：象法输出必须先看 `references/xiangfa-system/source-map.md` 和 `coverage-map.md`，再用本地规则切片；没有来源或没有落成本地规则的口诀，一律 `evidence_gap`。
-- 合盘与合婚：对双方命盘进行关系动力、互补点、冲突点、阶段节奏和注意事项分析。
-- 吉日吉时：按事件类型、候选日期、地点时区和硬性限制，输出可解释的择日择时排序。
-- 一事一问：在已有奇门盘或六爻卦象时，对投稿、签约、合作、面试等具体问题做证据化解读。
-- 专业报告：从已验证 JSON 或报告规格生成结构化、Markdown 或 HTML 风格的中文报告；当前不生成 PDF。
-
 ## 输出案例
 
 以下案例均使用**随机虚构样本**（非真人），仅作输出形态示意。命盘事实由 `lunar-javascript` 确定性计算，与宿主项目 `baziService.ts` 同口径；面向用户的解读统一为文化分析与反思建议，非确定性医疗/法律/金融结论。
@@ -186,7 +339,8 @@ flowchart TD
 
 > **速读**：壬水生丑月（季冬），申子辰三合水局 + 重金生身 → **身旺、金寒水冷**；全局**火（财）全无、木（食伤）极弱**。用神方向取火、木暖局疏秀，忌再添金水。年柱为庚申（1980）而非 1981，因八字以立春换岁——库已正确处理。
 
-### 案例 2：多流派大师会诊（主理官综合，节选）
+<details>
+<summary><b>案例 2：多流派大师会诊（主理官综合，节选）</b></summary>
 
 对上盘触发「多流派大师会诊」：并行派发 **子平格局 / 旺衰扶抑 / 调候 / 盲派象法 / 神煞辅助** 五派，各派只拿同一份证据包 + 自家流派提示词，禁止重算命盘；再经 **安全编辑** 把关，最后由 **主理官** 按源层级（代码事实 > 契约 > 方法契合度 > 跨派共识 > 单派解读）综合，不机械平均。
 
@@ -202,7 +356,10 @@ flowchart TD
 
 **透明披露的分歧**：甲申运甲木「无根受冻」效力、湿土制水力度为流派内可争议项；时柱信心下调归因于真太阳时精度（未用均时差），非边界临界；神煞派自陈本项目无完整神煞引擎，仅采信「子午卯酉」，其余（文昌/贵人/驿马/华盖/空亡/纳音）一律 `evidence_gap` 不评。
 
-### 案例 3：人生 K-line `AnalysisResult` JSON（结构示意，已截断）
+</details>
+
+<details>
+<summary><b>案例 3：人生 K-line `AnalysisResult` JSON（结构示意，已截断）</b></summary>
 
 K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0–100、含涨跌两类、且仅一条 `isPeak: true`；交付前用 `scripts/validate_analysis_result.py` 校验。
 
@@ -231,7 +388,10 @@ K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0
 }
 ```
 
-### 案例 4：单维度深推（婚姻/感情经营，节选）
+</details>
+
+<details>
+<summary><b>案例 4：单维度深推（婚姻/感情经营，节选）</b></summary>
 
 承案例 1–2 的同一随机样本，触发「聚焦某一维度深推」。主理官先用 `lunar-javascript` 确定性算出流年干支，并标注其与**夫星（女命官杀=土）、夫宫（日支辰）、桃花（时支子）**的合冲关系，再据此综合——全程为**结构倾向 / 时机参考，非"克夫/注定"断语**。
 
@@ -250,26 +410,7 @@ K-line 输出必须为合约有效 JSON、`timeline` 恰好 100 条、OHLC 为 0
 
 > 时机基于流年干支（确定性计算）；无流月/流日，不定位年内具体日期。随机虚构样本、非真人，婚姻为关系模式与时机倾向、非命定。
 
-## 目录结构
-
-- `SKILL.md`：Codex 运行时读取的主入口，定义触发条件、工作流、验证门槛和资源路由。
-- `agents/openai.yaml`：界面展示用的名称、简介和默认提示词。
-- `references/`：分主题参考文档，包括项目合约、分析方法、真太阳时、紫微、星座/西洋占星、常见流派、合盘、择时、报告生成、角色分工等。
-- `references/xiangfa-system/`：象法体系的来源映射、覆盖率地图、宫位象、十神象、刑冲合害象、组合象、运年触发和安全改写规则。
-- `references/school-prompts/`：多流派大师与主理官的专属提示词和知识切片，要求证据不足时输出 `evidence_gap`，不补空白规则。
-- `references/classics/`：古籍知识层。`index.md` 三向路由、`cards/` 按命理主题分片的条文卡片、
-  `corpus/` 精选原文底库。本期 `cards/` 只有带表头的空文件，`corpus/` 为空目录 ——
-  条文卡片与语料底库（含 `corpus/PROVENANCE.md` 溯源清单）随语料入库分期落地，
-  校验链路先行可跑。
-- `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
-- `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
-- `scripts/ganzhi_facts.py`、`scripts/ganzhi/`：干支事实层。`table.json` 是干支静态事实的唯一数据源，`references/bazi-domain-reference.md` 的表格由测试与它对齐。
-
-## Claude Code 兼容
-
-宿主项目内可提供 Claude Code 项目级 skill 镜像：`<repo>/.claude/skills/bazi-skill/`。
-
-在宿主项目根目录启动 Claude Code 后，可以用 `/bazi-skill` 调用同一套八字、可选紫微事实、可选星座/西洋占星事实、可选奇门/六爻事实、合盘、择日择时、多流派大师会诊和专业报告工作流。该镜像使用项目本地 `${CLAUDE_SKILL_DIR}` 读取 `references/` 与 `scripts/`，避免依赖个人机器上的 Codex skill 安装路径。
+</details>
 
 ## 常用命令
 
@@ -298,6 +439,27 @@ cat result.json | python3 scripts/validate_analysis_result.py --birth-year 1990 
 ```bash
 python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .
 ```
+
+## 目录结构
+
+- `SKILL.md`：Codex 运行时读取的主入口，定义触发条件、工作流、验证门槛和资源路由。
+- `agents/openai.yaml`：界面展示用的名称、简介和默认提示词。
+- `references/`：分主题参考文档，包括项目合约、分析方法、真太阳时、紫微、星座/西洋占星、常见流派、合盘、择时、报告生成、角色分工等。
+- `references/xiangfa-system/`：象法体系的来源映射、覆盖率地图、宫位象、十神象、刑冲合害象、组合象、运年触发和安全改写规则。
+- `references/school-prompts/`：多流派大师与主理官的专属提示词和知识切片，要求证据不足时输出 `evidence_gap`，不补空白规则。
+- `references/classics/`：古籍知识层。`index.md` 三向路由、`cards/` 按命理主题分片的条文卡片、
+  `corpus/` 精选原文底库。本期 `cards/` 只有带表头的空文件，`corpus/` 为空目录 ——
+  条文卡片与语料底库（含 `corpus/PROVENANCE.md` 溯源清单）随语料入库分期落地，
+  校验链路先行可跑。
+- `scripts/validate_analysis_result.py`：校验 K-line `AnalysisResult` JSON 的确定性脚本。
+- `scripts/validate_citations.py`、`scripts/search_classics.py`：引用校验与零依赖检索。
+- `scripts/ganzhi_facts.py`、`scripts/ganzhi/`：干支事实层。`table.json` 是干支静态事实的唯一数据源，`references/bazi-domain-reference.md` 的表格由测试与它对齐。
+
+## Claude Code 兼容
+
+宿主项目内可提供 Claude Code 项目级 skill 镜像：`<repo>/.claude/skills/bazi-skill/`。
+
+在宿主项目根目录启动 Claude Code 后，可以用 `/bazi-skill` 调用同一套八字、可选紫微事实、可选星座/西洋占星事实、可选奇门/六爻事实、合盘、择日择时、多流派大师会诊和专业报告工作流。该镜像使用项目本地 `${CLAUDE_SKILL_DIR}` 读取 `references/` 与 `scripts/`，避免依赖个人机器上的 Codex skill 安装路径。
 
 ## 使用提醒
 
